@@ -15,7 +15,7 @@ namespace outlookGrabber
         {
             InitializeComponent();
             OutlookClass oc = new OutlookClass();
-            textBox1.Text += oc.getMails();
+            textBox1.Text += oc.getMails();            
             textBox1.SelectionStart = 0;
             textBox1.SelectionLength = 0;
         }

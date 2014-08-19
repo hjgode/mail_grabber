@@ -1,12 +1,6 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "mail_license_grabber", "mail_license_grabber\mail_license_grabber.csproj", "{C32BFF34-B3CC-46EB-B6B7-14BCEF1DD5BE}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ManagedMAPI", "ManagedMAPI\ManagedMAPI.csproj", "{AA8EAC59-FADF-4859-90B5-035D503E9109}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "outlookGrabber", "outlookGrabber\outlookGrabber.csproj", "{5508C373-A520-4D61-9D3A-1832071448AA}"
-EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ews_grabber", "ews_grabber\ews_grabber.csproj", "{4A0D415C-8C54-44A8-87B1-F3F12B77AF0F}"
 EndProject
 Global
@@ -15,18 +9,6 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{C32BFF34-B3CC-46EB-B6B7-14BCEF1DD5BE}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{C32BFF34-B3CC-46EB-B6B7-14BCEF1DD5BE}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{C32BFF34-B3CC-46EB-B6B7-14BCEF1DD5BE}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{C32BFF34-B3CC-46EB-B6B7-14BCEF1DD5BE}.Release|Any CPU.Build.0 = Release|Any CPU
-		{AA8EAC59-FADF-4859-90B5-035D503E9109}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{AA8EAC59-FADF-4859-90B5-035D503E9109}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{AA8EAC59-FADF-4859-90B5-035D503E9109}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{AA8EAC59-FADF-4859-90B5-035D503E9109}.Release|Any CPU.Build.0 = Release|Any CPU
-		{5508C373-A520-4D61-9D3A-1832071448AA}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{5508C373-A520-4D61-9D3A-1832071448AA}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{5508C373-A520-4D61-9D3A-1832071448AA}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{5508C373-A520-4D61-9D3A-1832071448AA}.Release|Any CPU.Build.0 = Release|Any CPU
 		{4A0D415C-8C54-44A8-87B1-F3F12B77AF0F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{4A0D415C-8C54-44A8-87B1-F3F12B77AF0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A0D415C-8C54-44A8-87B1-F3F12B77AF0F}.Release|Any CPU.ActiveCfg = Release|Any CPU

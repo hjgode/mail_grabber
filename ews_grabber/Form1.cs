@@ -18,7 +18,8 @@ namespace ews_grabber
         {
             InitializeComponent();
             _ews = new ews();
-            _ews.MailRead += _ews_MailRead;
+            _ews.stateChanged += _ews_stateChanged;
+            _ews.start();
             if (_ews.logon("Global", "E841719", "Chopper+8"))
             {// if(_ews.logon())// if(_ews.logon("heinz-josef.gode@honeywell.com"))
                 //_ews.getMails();
@@ -29,17 +30,40 @@ namespace ews_grabber
 
         }
 
-        void _ews_MailRead(ews.ReadMailEventArgs args)
+        void _ews_stateChanged(StatusEventArgs args)
         {
             Cursor.Current = Cursors.Default;
-            if (args.bValid)
-                addLog("got valid results");
-            else
-                addLog("got invalid results");
-            List<EmailMessage> list = _ews._mailList;
-            foreach (EmailMessage m in list)
+            switch (args.eStatus)
             {
-                addLog( m.Sender.Name + m.Subject + m.Attachments.Count.ToString() + "\r\n");
+                case StatusType.success:
+                    addLog("got valid results");
+                    List<EmailMessage> list = _ews._mailList;
+                    foreach (EmailMessage m in list)
+                    {
+                        addLog( m.Sender.Name + m.Subject + m.Attachments.Count.ToString() + "\r\n");
+                    }
+                    break;
+                case StatusType.validating:
+                    addLog("validating "+args.message);
+                    break;
+                case StatusType.error:
+                    addLog("got invalid results");
+                    break;
+                case StatusType.busy:
+                    addLog("exchange is busy..." + args.message);
+                    break;
+                case StatusType.idle:
+                    addLog("exchange idle...");
+                    break;
+                case StatusType.url_changed:
+                    addLog("url changed: " + args.message);
+                    break;
+                case StatusType.none:
+                    addLog("wait..."+args.message);
+                    break;
+                case StatusType.license_mail:
+                    addLog(args.message);
+                    break;
             }
         }
 
@@ -61,6 +85,11 @@ namespace ews_grabber
                 textBox1.SelectionStart = textBox1.Text.Length - 1;
                 textBox1.ScrollToCaret();
             }
+        }
+
+        private void Form1_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            _ews.Dispose();
         }
     }
 }
