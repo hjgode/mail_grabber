@@ -3,6 +3,10 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio 2012
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ews_grabber", "ews_grabber\ews_grabber.csproj", "{4A0D415C-8C54-44A8-87B1-F3F12B77AF0F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ExchangeMail", "ExchangeMail\ExchangeMail.csproj", "{AB28C50C-3E48-4E34-991E-31F2F01BF7F6}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Helpers", "Helpers\Helpers.csproj", "{D219A443-E735-4988-B6FD-E9E85375F1EC}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -13,6 +17,14 @@ Global
 		{4A0D415C-8C54-44A8-87B1-F3F12B77AF0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{4A0D415C-8C54-44A8-87B1-F3F12B77AF0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{4A0D415C-8C54-44A8-87B1-F3F12B77AF0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{AB28C50C-3E48-4E34-991E-31F2F01BF7F6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{AB28C50C-3E48-4E34-991E-31F2F01BF7F6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{AB28C50C-3E48-4E34-991E-31F2F01BF7F6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{AB28C50C-3E48-4E34-991E-31F2F01BF7F6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D219A443-E735-4988-B6FD-E9E85375F1EC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D219A443-E735-4988-B6FD-E9E85375F1EC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D219A443-E735-4988-B6FD-E9E85375F1EC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D219A443-E735-4988-B6FD-E9E85375F1EC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
