@@ -8,6 +8,7 @@ using System.Xml;
 using System.Net;
 using Microsoft.Exchange.WebServices.Data;
 using utils;
+using Helpers;
 
 using System.Net.Security;
 using System.Security.Cryptography.X509Certificates;
@@ -16,9 +17,9 @@ using System.Threading;
 
 namespace ExchangeMail
 {
-    public delegate void StateChangedEventHandler(object sender, StatusEventArgs args);
+    //see interfaces //public delegate void StateChangedEventHandler(object sender, StatusEventArgs args);
 
-    public class ews : IDisposable
+    public class ews : IMailHost
     {
         Microsoft.Exchange.WebServices.Data.ExchangeService service = null;
 
@@ -28,19 +29,20 @@ namespace ExchangeMail
 
         Thread _thread;
         volatile bool _bRunThread = true;
-        public List<EmailMessage> _mailList;
 
         public bool _enableTrace = false;
 
         bool bRunPullThread = true;
         bool bHandleEvents = true;
 
+        public userData UserData { get; set; }
+        
         /// <summary>
         /// initialize a new ExchangeWebService object
         /// </summary>
         public ews()
         {
-            _mailList = new List<EmailMessage>();
+            
         }
 
         public void start()
@@ -81,52 +83,6 @@ namespace ExchangeMail
         }
 
         /// <summary>
-        /// logon using AutodiscoverUrl
-        /// </summary>
-        /// <param name="sEmail">full callified user eMail address</param>
-        /// <returns>true if success</returns>
-        public bool logon(string sEmail)
-        {
-            bool bRet = false;
-            try
-            {
-                //service.AutodiscoverUrl(sEmail);
-                service.AutodiscoverUrl(sEmail, ValidateRedirectionUrlCallback);
-                service.Url = new Uri(serviceURL);
-                helpers.addLog("connected to: " + service.Url.ToString());
-                helpers.addLog("ServerInfo: " + service.ServerInfo.VersionString);
-                bRet = true;
-            }
-            catch (Exception ex)
-            {
-                helpers.addLog("Exception: " + ex.Message);
-            }
-            return bRet;
-        }
-
-        /// <summary>
-        /// logon using current domain logon
-        /// </summary>
-        /// <returns>true if success</returns>
-        public bool logon()
-        {
-            bool bRet = false;
-            try
-            {
-                // Connect by using the default credentials of the authenticated user.
-                service.UseDefaultCredentials = true;
-                service.Url = new Uri(hsm_service_url);
-                //helpers.addLog("service: " + service.ServerInfo.VersionString);
-                bRet = true;
-            }
-            catch (Exception ex)
-            {
-                helpers.addLog("Exception: " + ex.Message);
-            }
-            return bRet;
-        }
-
-        /// <summary>
         /// logon using domain, user and password
         /// </summary>
         /// <param name="sDomain">the domain for login</param>
@@ -138,6 +94,7 @@ namespace ExchangeMail
         {
             OnStateChanged(new StatusEventArgs(StatusType.busy, "logon..."));
             bool bRet = false;
+            UserData = new userData(sDomain, sUser, sPassword);
             try
             {
                 // Or use NetworkCredential directly (WebCredentials is a wrapper
@@ -193,14 +150,14 @@ namespace ExchangeMail
         }
 
         #region Threading_stuff
-        public event StateChangedEventHandler stateChangedEvent;
-
+        // see interfaces //public event StateChangedEventHandler stateChangedEvent;  
+        public event Helpers.StateChangedEventHandler StateChanged;
         protected virtual void OnStateChanged(StatusEventArgs args)
         {
             if (!bHandleEvents)
                 return;
-            System.Diagnostics.Debug.WriteLine("onStateChanged: " + args.eStatus.ToString() + ":" + args.message);
-            StateChangedEventHandler handler = stateChangedEvent;
+            System.Diagnostics.Debug.WriteLine("onStateChanged: " + args.eStatus.ToString() + ":" + args.strMessage);
+            StateChangedEventHandler handler = StateChanged;
             if (handler != null)
             {
                 handler(this, args);
@@ -208,8 +165,7 @@ namespace ExchangeMail
         }
 
         public void getMailsAsync()
-        {
-            _mailList = new List<EmailMessage>();
+        {            
             _thread = new Thread(_getMails);
             _thread.Name = "getMail thread";
             _thread.Start(this);
@@ -262,14 +218,15 @@ namespace ExchangeMail
                         if (item is EmailMessage)
                         {
                             helpers.addLog("\t is email ...");
-                            _ews._mailList.Add(item as EmailMessage);
 
                             // If the item is an e-mail message, write the sender's name.
                             helpers.addLog((item as EmailMessage).Sender.Name + ": " + (item as EmailMessage).Subject);
 
+                            MailMsg myMailMsg = new MailMsg(item as EmailMessage, _ews.UserData.sUser);
+
                             // Bind to an existing message using its unique identifier.
                             //EmailMessage message = EmailMessage.Bind(service, new ItemId(item.Id.UniqueId));
-                            _ews.OnStateChanged(new StatusEventArgs(StatusType.license_mail, item as EmailMessage));
+                            _ews.OnStateChanged(new StatusEventArgs(StatusType.license_mail, myMailMsg));
                         }
                     }
                     view.Offset += chunkSize;
@@ -434,10 +391,14 @@ namespace ExchangeMail
                                             }
                                         }
                                     }
-                                    if(bDoProcessMail)
-                                        _ews.OnStateChanged(new StatusEventArgs(StatusType.license_mail, message));
+                                    if (bDoProcessMail)
+                                    {
+                                        //create a new IMailMessage from the EmailMessage
+                                        MailMsg myMailMsg = new MailMsg(message, _ews.UserData.sUser);
+                                        _ews.OnStateChanged(new StatusEventArgs(StatusType.license_mail, myMailMsg));
+                                    }
                                     else
-                                        _ews.OnStateChanged(new StatusEventArgs(StatusType.license_mail, "mismatched mail received"));
+                                        _ews.OnStateChanged(new StatusEventArgs(StatusType.other_mail, "mismatched mail received"));
                                 }
                                 break;
                             case EventType.Created:
@@ -493,7 +454,7 @@ namespace ExchangeMail
                     */
                 }//end while
             }
-            catch (ThreadAbortException ex)
+            catch (ThreadAbortException)
             {
                 _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "Pull Thread ThreadAbortException"));
                 _ews.bRunPullThread = false;

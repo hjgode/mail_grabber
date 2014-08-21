@@ -9,6 +9,8 @@ using System.Windows.Forms;
 
 using ExchangeMail;
 
+using Helpers;
+
 namespace ews_grabber
 {
     public partial class Form1 : Form
@@ -30,109 +32,36 @@ namespace ews_grabber
             switch (args.eStatus)
             {
                 case StatusType.success:
-                    addLog("got valid results");
-                    List<Microsoft.Exchange.WebServices.Data.EmailMessage> list = _ews._mailList;
-                    foreach (Microsoft.Exchange.WebServices.Data.EmailMessage m in list)
-                    {
-                        processMail(m);
-                    }
-                    mailList.AddRange(list);
+                    addLog("success " + args.strMessage);
                     break;
                 case StatusType.validating:
-                    addLog("validating "+args.message);
+                    addLog("validating " + args.strMessage);
                     break;
                 case StatusType.error:
                     addLog("got invalid results");
                     break;
                 case StatusType.busy:
-                    addLog("exchange is busy..." + args.message);
+                    addLog("exchange is busy..." + args.strMessage);
                     break;
                 case StatusType.idle:
                     addLog("exchange idle...");
                     break;
                 case StatusType.url_changed:
-                    addLog("url changed: " + args.message);
+                    addLog("url changed: " + args.strMessage);
                     break;
                 case StatusType.none:
-                    addLog("wait..."+args.message);
+                    addLog("wait..." + args.strMessage);
                     break;
                 case StatusType.license_mail:
-                    addLog(args.message);
-                    processMail(args.excMail);
+                    addLog("license_mail: " + args.strMessage);
+                    Helpers.LicenseMail.processMail(args.mailmsg);
+                    break;
+                case StatusType.other_mail:
+                    addLog("other_mail: " + args.strMessage);
                     break;
             }
         }
 
-        int processMail(Microsoft.Exchange.WebServices.Data.EmailMessage m)
-        {
-            int iRet = 0;
-            if (m == null)
-            {
-                addLog("processMail: null msg");
-                return iRet;
-            }
-            try
-            {
-                addLog(m.Sender.Name + m.Subject + m.Attachments.Count.ToString() + "\r\n");
-                if (m.HasAttachments)
-                {
-                    // Request all the attachments on the email message. This results in a GetItem operation call to EWS.
-                    m.Load(new Microsoft.Exchange.WebServices.Data.PropertySet(Microsoft.Exchange.WebServices.Data.EmailMessageSchema.Attachments));
-                    foreach (Microsoft.Exchange.WebServices.Data.Attachment att in m.Attachments)
-                    {
-                        if (att is Microsoft.Exchange.WebServices.Data.FileAttachment)
-                        {
-                            Microsoft.Exchange.WebServices.Data.FileAttachment fileAttachment = att as Microsoft.Exchange.WebServices.Data.FileAttachment;
-                            
-                            //get a temp file name
-                            string fname = System.IO.Path.GetTempFileName(); //utils.helpers.getAppPath() + fileAttachment.Id.ToString() + "_" + fileAttachment.Name
-
-                            /*
-                            // Load the file attachment into memory. This gives you access to the attachment content, which 
-                            // is a byte array that you can use to attach this file to another item. This results in a GetAttachment operation
-                            // call to EWS.
-                            fileAttachment.Load();
-                            */
-
-                            // Load attachment contents into a file. This results in a GetAttachment operation call to EWS.
-                            fileAttachment.Load(fname);
-                            addLog("Attachement file saved to: " + fname);
-
-                            /*
-                            // Put attachment contents into a stream.
-                            using (System.IO.FileStream theStream =
-                                new System.IO.FileStream(utils.helpers.getAppPath() + fileAttachment.Id.ToString() + "_" + fileAttachment.Name, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.ReadWrite))
-                            {
-                                //This results in a GetAttachment operation call to EWS.
-                                fileAttachment.Load(theStream);
-                            }
-                            */
-
-                            /*
-                            //load into memory stream, seems the only stream supported
-                            using (System.IO.MemoryStream ms = new System.IO.MemoryStream(att.Size))
-                            {
-                                fileAttachment.Load(ms);
-                                using (System.IO.FileStream fs = new System.IO.FileStream(fname, System.IO.FileMode.OpenOrCreate, System.IO.FileAccess.ReadWrite))
-                                {
-                                    ms.CopyTo(fs);
-                                    fs.Flush();
-                                }                                
-                            }
-                            */
-                            addLog("saved attachement: " + fname);
-                            iRet++;
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                addLog("Exception: " + ex.Message);
-            }
-            addLog("processMail did process " + iRet.ToString() + " files");
-            return iRet;
-        }
 
         delegate void SetTextCallback(string text);
         public void addLog(string text)
@@ -166,12 +95,12 @@ namespace ews_grabber
 
         private void mnuConnect_Click(object sender, EventArgs e)
         {
-            utils.userData _userData = new utils.userData("Global", "E841719", "");
+            _userData = new utils.userData("Global", "E841719", "");
             Helpers.GetLogonData dlg = new Helpers.GetLogonData(ref _userData);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 _ews = new ews();
-                _ews.stateChangedEvent += new StateChangedEventHandler(_ews_stateChanged1);
+                _ews.StateChanged += new StateChangedEventHandler(_ews_stateChanged1);
                 _ews.start();
                 if (_ews.logon(_userData.sDomain, _userData.sUser, _userData.sPassword))
                 {// "Global", "E841719", ""))
@@ -186,6 +115,11 @@ namespace ews_grabber
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
             this.Close();
+        }
+
+        private void mnuTest_xml_Click(object sender, EventArgs e)
+        {
+            addLog(LicenseXML.TestXML.runTest());
         }
     }
 }

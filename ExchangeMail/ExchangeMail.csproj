@@ -47,7 +47,6 @@
     <Compile Include="ews.cs" />
     <Compile Include="MailMsg.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="StatusEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Helpers\Helpers.csproj">

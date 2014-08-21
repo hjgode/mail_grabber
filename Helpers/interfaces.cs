@@ -5,47 +5,94 @@ using System.Text;
 
 namespace Helpers
 {
-    public interface IMailMessage
-    {
-        string Sender{get;set;}
-        string Body { get; set; }
-        string Subject { get; set; }
-        excAttachement[] Attachements { get; set; }
-        //object blob { get; set; }
-        string id { get; set; }
-    }
-    public interface IAttachement
-    {
-        object blob { get; set; }
-        string name{ get; set; }
-    }
+    public delegate void StateChangedEventHandler(object sender, StatusEventArgs args);
+    /// <summary>
+    /// interface to be used for a mail 'client'
+    /// </summary>
     public interface IMailHost:IDisposable
     {
-        //public delegate void StateChangedEventHandler(object sender, StatusEventArgs args);
-        //public event StateChangedEventHandler stateChangedEvent;
+        event StateChangedEventHandler StateChanged;
         bool logon(string sDomain, string sUser, string sPassword);
-        void start();
-        void OnStateChanged(StatusEventArgs args);
+        void start();        
         void getMailsAsync();
+        utils.userData UserData { get; set; }
     }
-    public class excAttachement : IAttachement
+
+    /// <summary>
+    /// interface for a mail message
+    /// </summary>
+    public interface IMailMessage
     {
-        public object blob
+        /// <summary>
+        /// the user that processed this mail
+        /// </summary>
+        string User{get;set;}
+        string Body { get; set; }
+        string Subject { get; set; }
+        Attachement[] Attachements { get; set; }
+        void addAttachement(Attachement att);
+        DateTime timestamp { get; set; }
+    }
+
+    /// <summary>
+    /// interface for attachement store
+    /// </summary>
+    public interface IAttachement
+    {
+        System.IO.Stream data { get; set; }
+        long size { get; set; }
+        string name{ get; set; }
+    }
+
+    /// <summary>
+    /// class that implements an attachement
+    /// </summary>
+    public class Attachement : IAttachement
+    {
+        public long size
         {
-            get { return _blob; }
-            set { _blob = value; }
+            get;
+            set;
         }
-        object _blob;
+        public System.IO.Stream data
+        {
+            get { return _stream; }
+            set { _stream = value; }
+        }
+        System.IO.Stream _stream;
         public string name
         {
             get { return _name; }
             set { _name = value; }
         }
         string _name;
-        public excAttachement(object o, string n)
+        public Attachement(System.IO.Stream s, string n)
         {
-            this._blob = o;
+            this._stream = s;
             this._name = n;
+            size = s.Length;
+        }
+    }
+    public class MailMessage : IMailMessage
+    {
+        public string User { get; set; }
+        public string Body { get; set; }
+        public string Subject { get; set; }
+        public Attachement[] Attachements { get; set; }
+        List<Attachement> attList = new List<Attachement>();
+        public DateTime timestamp{ get; set; }
+        public MailMessage(string user, string body, string subject, Attachement[] atts, DateTime dt)
+        {
+            this.User = user;
+            this.Body = body;
+            this.Subject = subject;
+            this.Attachements = atts;
+            attList.AddRange(atts);
+            timestamp = dt;
+        }
+        public void addAttachement(Attachement att)
+        {
+            attList.Add(att);
         }
     }
 

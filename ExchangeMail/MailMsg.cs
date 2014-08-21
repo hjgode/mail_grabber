@@ -10,11 +10,14 @@ using Microsoft.Exchange.WebServices.Data;
 
 namespace ExchangeMail
 {
+    /// <summary>
+    /// this class implements the IMailMessage interface for Exchange Microsoft.Exchange.WebServices.Data.EmailMessage
+    /// </summary>
     public class MailMsg:IMailMessage
     {
-        public string Sender {
-            get { return _Sender; }
-            set { _Sender = value; }
+        public string User {
+            get { return _User; }
+            set { _User = value; }
         }
         public string Body
         {
@@ -26,16 +29,10 @@ namespace ExchangeMail
             get { return _Subject; }
             set { _Subject = value; }
         }
-        public excAttachement[] Attachements
+        public Attachement[] Attachements
         {
             get { return _Attachements; }
             set { _Attachements = value; }
-        }
-
-        public object blob
-        {
-            get { return _blob; }
-            set { _blob = value; }
         }
 
         public string id
@@ -44,27 +41,65 @@ namespace ExchangeMail
             set { _id = value; }
         }
 
-        string _Sender;
+        string _User;
         string _Body;
         string _Subject;
-        excAttachement[] _Attachements;
-        object _blob;
+        Attachement[] _Attachements;
+
+        List<Attachement> attList = new List<Attachement>();
         string _id;
 
-        MailMsg(EmailMessage msg)
+        public DateTime timestamp { 
+            get { return _timestamp; } 
+            set {_timestamp=value; }
+        }
+        DateTime _timestamp;        
+
+        public MailMsg(EmailMessage msg, string user)
         {
-            this._Sender = msg.Sender.ToString();
+            this._User = user;
             this._id = msg.Id.ToString();
+            timestamp = msg.DateTimeSent;
 
             if (msg.HasAttachments)
             {
-                List<excAttachement> oList = new List<excAttachement>();
+                //we will add all attachements to a list
+                List<Attachement> oList = new List<Attachement>();
+                //load all attachements
+                msg.Load(new Microsoft.Exchange.WebServices.Data.PropertySet(Microsoft.Exchange.WebServices.Data.EmailMessageSchema.Attachments));
+                foreach (Microsoft.Exchange.WebServices.Data.Attachment att in msg.Attachments)
+                {
+                    if (att is Microsoft.Exchange.WebServices.Data.FileAttachment)
+                    {
+                        //load the attachement
+                        Microsoft.Exchange.WebServices.Data.FileAttachment fileAttachment = att as Microsoft.Exchange.WebServices.Data.FileAttachment;
+                        //load into memory stream, seems the only stream supported
+                        using (System.IO.MemoryStream ms = new System.IO.MemoryStream(att.Size))
+                        {
+                            fileAttachment.Load(ms);
+                            oList.Add(new Attachement(ms, fileAttachment.Name));
+                        }
+                    }
+                }
+                /*
                 foreach (Attachment a in msg.Attachments)
                 {
-                    oList.Add(new excAttachement(null, a.Name));
+                    if (a is Microsoft.Exchange.WebServices.Data.FileAttachment)
+                    {
+                        FileAttachment fa = a as FileAttachment;
+                        System.IO.MemoryStream ms=new System.IO.MemoryStream(fa.Size);
+                        fa.Load(ms);
+                        oList.Add(new Attachement(ms, fa.Name));
+                    }
                 }
+                */
                 this._Attachements = oList.ToArray();
+                this.attList.AddRange(oList);
             }
+        }
+        public void addAttachement(Attachement att)
+        {
+            this.attList.Add(att);
         }
     }
 }

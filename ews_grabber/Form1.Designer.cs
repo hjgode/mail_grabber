@@ -34,6 +34,8 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exchangeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuConnect = new System.Windows.Forms.ToolStripMenuItem();
+            this.adminToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuTest_xml = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -52,7 +54,8 @@
             // 
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.exchangeToolStripMenuItem});
+            this.exchangeToolStripMenuItem,
+            this.adminToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(482, 24);
@@ -70,7 +73,7 @@
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(92, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
@@ -88,6 +91,21 @@
             this.mnuConnect.Size = new System.Drawing.Size(152, 22);
             this.mnuConnect.Text = "Connect";
             this.mnuConnect.Click += new System.EventHandler(this.mnuConnect_Click);
+            // 
+            // adminToolStripMenuItem
+            // 
+            this.adminToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mnuTest_xml});
+            this.adminToolStripMenuItem.Name = "adminToolStripMenuItem";
+            this.adminToolStripMenuItem.Size = new System.Drawing.Size(55, 20);
+            this.adminToolStripMenuItem.Text = "Admin";
+            // 
+            // mnuTest_xml
+            // 
+            this.mnuTest_xml.Name = "mnuTest_xml";
+            this.mnuTest_xml.Size = new System.Drawing.Size(152, 22);
+            this.mnuTest_xml.Text = "Test xml";
+            this.mnuTest_xml.Click += new System.EventHandler(this.mnuTest_xml_Click);
             // 
             // Form1
             // 
@@ -117,6 +135,8 @@
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem exchangeToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mnuConnect;
+        private System.Windows.Forms.ToolStripMenuItem adminToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem mnuTest_xml;
     }
 }
 
