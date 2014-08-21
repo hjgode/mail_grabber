@@ -26,6 +26,8 @@ namespace ExchangeMail
         const string hsm_service_url = "https://az18-cas-01.global.ds.honeywell.com/EWS/Exchange.asmx";
         static string serviceURL = "https://az18-cas-01.global.ds.honeywell.com/EWS/Exchange.asmx";
         // EMEA-CAS-01.global.ds.honeywell.com
+        const string webProxy = "fr44proxy.honeywell.com";
+        const int webProxyPort = 8080;
 
         Thread _thread;
         volatile bool _bRunThread = true;
@@ -47,6 +49,11 @@ namespace ExchangeMail
 
         public void start()
         {
+            if (service != null)
+            {
+                OnStateChanged(new StatusEventArgs(StatusType.error, "Already connected"));
+                return;
+            }
             try
             {
                 serviceURL = hsm_service_url;
@@ -67,6 +74,7 @@ namespace ExchangeMail
                     };
 
                 service = new ExchangeService(Microsoft.Exchange.WebServices.Data.ExchangeVersion.Exchange2010_SP2);
+
                 if (_enableTrace)
                 {
                     service.TraceListener = new TraceListener();// ITraceListenerInstance;
@@ -90,16 +98,18 @@ namespace ExchangeMail
         /// <param name="sPassword">password</param>
         /// <returns>true if success</returns>
 
-        public bool logon(string sDomain, string sUser, string sPassword)
+        public bool logon(string sDomain, string sUser, string sPassword, bool bProxy)
         {
             OnStateChanged(new StatusEventArgs(StatusType.busy, "logon..."));
             bool bRet = false;
-            UserData = new userData(sDomain, sUser, sPassword);
+            UserData = new userData(sDomain, sUser, sPassword, bProxy);
             try
             {
                 // Or use NetworkCredential directly (WebCredentials is a wrapper
                 // around NetworkCredential).
                 service.Credentials = new NetworkCredential(sUser, sPassword, sDomain);
+                if(UserData.bUseProxy)
+                    service.WebProxy = new WebProxy(webProxy, webProxyPort);
                 service.Url = new Uri(hsm_service_url);
                 helpers.addLog("connected to: " + service.Url.ToString());
                 OnStateChanged(new StatusEventArgs(StatusType.idle, "connected to: " + service.Url.ToString()));
@@ -357,12 +367,21 @@ namespace ExchangeMail
 
             // Subscribe to pull notifications in the Inbox folder, and get notified when
             // a new mail is received, when an item or folder is created, or when an item
-            // or folder is deleted. 
-            PullSubscription subscription = _ews.service.SubscribeToPullNotifications(new FolderId[] { WellKnownFolderName.Inbox },
-            iTimeoutMinutes /* timeOut: the subscription will end if the server is not polled within 5 minutes. */,
-            null /* watermark: null to start a new subscription. */,
-            EventType.NewMail);//, EventType.Created, EventType.Deleted);
-
+            // or folder is deleted.
+            PullSubscription subscription=null;
+            try
+            {
+                subscription = _ews.service.SubscribeToPullNotifications(new FolderId[] { WellKnownFolderName.Inbox },
+                iTimeoutMinutes /* timeOut: the subscription will end if the server is not polled within 5 minutes. */,
+                null /* watermark: null to start a new subscription. */,
+                EventType.NewMail);//, EventType.Created, EventType.Deleted);
+            }
+            catch (Exception ex)
+            {
+                _ews.StateChanged(null, new StatusEventArgs(StatusType.error, "PullSubscription FAILED: "+ex.Message));
+            }
+            if (subscription == null)
+                return;
             try
             {
                 while (_ews.bRunPullThread)

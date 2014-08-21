@@ -95,14 +95,14 @@ namespace ews_grabber
 
         private void mnuConnect_Click(object sender, EventArgs e)
         {
-            _userData = new utils.userData("Global", "E841719", "");
+            _userData = new utils.userData("Global", "E841719", "", false);
             Helpers.GetLogonData dlg = new Helpers.GetLogonData(ref _userData);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
                 _ews = new ews();
                 _ews.StateChanged += new StateChangedEventHandler(_ews_stateChanged1);
                 _ews.start();
-                if (_ews.logon(_userData.sDomain, _userData.sUser, _userData.sPassword))
+                if (_ews.logon(_userData.sDomain, _userData.sUser, _userData.sPassword, _userData.bUseProxy))
                 {// "Global", "E841719", ""))
                     Cursor.Current = Cursors.WaitCursor;
                     Application.DoEvents();
@@ -120,6 +120,13 @@ namespace ews_grabber
         private void mnuTest_xml_Click(object sender, EventArgs e)
         {
             addLog(LicenseXML.TestXML.runTest());
+        }
+
+        private void mnuTest_DB_Click(object sender, EventArgs e)
+        {
+            LicenseData ld = new LicenseData();
+            ld.add("cn70123", "customer", "key", "ordern#", DateTime.Now, "1234", "intermec", "CN70E", 1);
+
         }
     }
 }

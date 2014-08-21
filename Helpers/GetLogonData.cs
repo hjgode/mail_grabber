@@ -19,6 +19,7 @@ namespace Helpers
             txtDomain.Text = data.sDomain;
             txtUser.Text = data.sUser;
             txtPassword.Text = data.sPassword;
+            chkUseProxy.Checked = data.bUseProxy;
         }
 
         private void btnOK_Click(object sender, EventArgs e)
@@ -26,6 +27,7 @@ namespace Helpers
             _userData.sDomain = txtDomain.Text;
             _userData.sUser = txtUser.Text;
             _userData.sPassword = txtPassword.Text;
+            _userData.bUseProxy = chkUseProxy.Checked;
             this.DialogResult= DialogResult.OK;
         }
 

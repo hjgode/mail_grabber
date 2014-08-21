@@ -12,7 +12,7 @@ namespace Helpers
     public interface IMailHost:IDisposable
     {
         event StateChangedEventHandler StateChanged;
-        bool logon(string sDomain, string sUser, string sPassword);
+        bool logon(string sDomain, string sUser, string sPassword, bool bProxy);
         void start();        
         void getMailsAsync();
         utils.userData UserData { get; set; }

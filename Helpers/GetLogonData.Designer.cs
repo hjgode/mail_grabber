@@ -37,6 +37,7 @@
             this.btnOK = new System.Windows.Forms.Button();
             this.label4 = new System.Windows.Forms.Label();
             this.btnCancel = new System.Windows.Forms.Button();
+            this.chkUseProxy = new System.Windows.Forms.CheckBox();
             this.SuspendLayout();
             // 
             // label1
@@ -122,11 +123,22 @@
             this.btnCancel.UseVisualStyleBackColor = true;
             this.btnCancel.Click += new System.EventHandler(this.btnCancel_Click);
             // 
+            // chkUseProxy
+            // 
+            this.chkUseProxy.AutoSize = true;
+            this.chkUseProxy.Location = new System.Drawing.Point(192, 165);
+            this.chkUseProxy.Name = "chkUseProxy";
+            this.chkUseProxy.Size = new System.Drawing.Size(69, 17);
+            this.chkUseProxy.TabIndex = 5;
+            this.chkUseProxy.Text = "useProxy";
+            this.chkUseProxy.UseVisualStyleBackColor = true;
+            // 
             // GetLogonData
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(284, 262);
+            this.Controls.Add(this.chkUseProxy);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.label4);
             this.Controls.Add(this.btnOK);
@@ -160,5 +172,6 @@
         private System.Windows.Forms.Button btnOK;
         private System.Windows.Forms.Label label4;
         private System.Windows.Forms.Button btnCancel;
+        private System.Windows.Forms.CheckBox chkUseProxy;
     }
 }

@@ -56,17 +56,21 @@ namespace utils
         public string sDomain;
         public string sUser;
         public string sPassword;
+        public bool bUseProxy = false;
+
         public userData()
         {
             sDomain = "";
             sUser = "";
             sPassword = "";
+            bUseProxy = false;
         }
-        public userData(string d, string u, string p)
+        public userData(string d, string u, string p, bool bProxy)
         {
             sDomain = d;
             sUser = u;
             sPassword = p;
+            bUseProxy = bProxy;
         }
     }
 

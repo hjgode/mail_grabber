@@ -36,6 +36,7 @@
             this.mnuConnect = new System.Windows.Forms.ToolStripMenuItem();
             this.adminToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuTest_xml = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuTest_DB = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -67,7 +68,7 @@
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // exitToolStripMenuItem
@@ -82,22 +83,23 @@
             this.exchangeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuConnect});
             this.exchangeToolStripMenuItem.Name = "exchangeToolStripMenuItem";
-            this.exchangeToolStripMenuItem.Size = new System.Drawing.Size(69, 20);
+            this.exchangeToolStripMenuItem.Size = new System.Drawing.Size(66, 20);
             this.exchangeToolStripMenuItem.Text = "Exchange";
             // 
             // mnuConnect
             // 
             this.mnuConnect.Name = "mnuConnect";
-            this.mnuConnect.Size = new System.Drawing.Size(152, 22);
+            this.mnuConnect.Size = new System.Drawing.Size(114, 22);
             this.mnuConnect.Text = "Connect";
             this.mnuConnect.Click += new System.EventHandler(this.mnuConnect_Click);
             // 
             // adminToolStripMenuItem
             // 
             this.adminToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mnuTest_xml});
+            this.mnuTest_xml,
+            this.mnuTest_DB});
             this.adminToolStripMenuItem.Name = "adminToolStripMenuItem";
-            this.adminToolStripMenuItem.Size = new System.Drawing.Size(55, 20);
+            this.adminToolStripMenuItem.Size = new System.Drawing.Size(48, 20);
             this.adminToolStripMenuItem.Text = "Admin";
             // 
             // mnuTest_xml
@@ -106,6 +108,13 @@
             this.mnuTest_xml.Size = new System.Drawing.Size(152, 22);
             this.mnuTest_xml.Text = "Test xml";
             this.mnuTest_xml.Click += new System.EventHandler(this.mnuTest_xml_Click);
+            // 
+            // mnuTest_DB
+            // 
+            this.mnuTest_DB.Name = "mnuTest_DB";
+            this.mnuTest_DB.Size = new System.Drawing.Size(152, 22);
+            this.mnuTest_DB.Text = "Test db";
+            this.mnuTest_DB.Click += new System.EventHandler(this.mnuTest_DB_Click);
             // 
             // Form1
             // 
@@ -137,6 +146,7 @@
         private System.Windows.Forms.ToolStripMenuItem mnuConnect;
         private System.Windows.Forms.ToolStripMenuItem adminToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mnuTest_xml;
+        private System.Windows.Forms.ToolStripMenuItem mnuTest_DB;
     }
 }
 
