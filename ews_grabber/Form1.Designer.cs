@@ -39,20 +39,21 @@
             this.mnuProcess_Mail = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabSearch = new System.Windows.Forms.TabPage();
+            this.panel1 = new System.Windows.Forms.Panel();
+            this.tabBrowse = new System.Windows.Forms.TabPage();
+            this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.tabLog = new System.Windows.Forms.TabPage();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.tabBrowse = new System.Windows.Forms.TabPage();
             this.statusStrip1 = new System.Windows.Forms.StatusStrip();
             this.toolStripStatusLabel1 = new System.Windows.Forms.ToolStripStatusLabel();
-            this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.panel1 = new System.Windows.Forms.Panel();
+            this.mnuClearData = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabSearch.SuspendLayout();
-            this.tabLog.SuspendLayout();
             this.tabBrowse.SuspendLayout();
-            this.statusStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            this.tabLog.SuspendLayout();
+            this.statusStrip1.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -72,7 +73,7 @@
             this.fileToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.exitToolStripMenuItem});
             this.fileToolStripMenuItem.Name = "fileToolStripMenuItem";
-            this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
+            this.fileToolStripMenuItem.Size = new System.Drawing.Size(35, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
             // exitToolStripMenuItem
@@ -87,13 +88,13 @@
             this.exchangeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuConnect});
             this.exchangeToolStripMenuItem.Name = "exchangeToolStripMenuItem";
-            this.exchangeToolStripMenuItem.Size = new System.Drawing.Size(69, 20);
+            this.exchangeToolStripMenuItem.Size = new System.Drawing.Size(66, 20);
             this.exchangeToolStripMenuItem.Text = "Exchange";
             // 
             // mnuConnect
             // 
             this.mnuConnect.Name = "mnuConnect";
-            this.mnuConnect.Size = new System.Drawing.Size(119, 22);
+            this.mnuConnect.Size = new System.Drawing.Size(114, 22);
             this.mnuConnect.Text = "Connect";
             this.mnuConnect.Click += new System.EventHandler(this.mnuConnect_Click);
             // 
@@ -102,29 +103,30 @@
             this.mnuAdmin.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.mnuTest_xml,
             this.mnuTest_DB,
-            this.mnuProcess_Mail});
+            this.mnuProcess_Mail,
+            this.mnuClearData});
             this.mnuAdmin.Name = "mnuAdmin";
-            this.mnuAdmin.Size = new System.Drawing.Size(55, 20);
+            this.mnuAdmin.Size = new System.Drawing.Size(48, 20);
             this.mnuAdmin.Text = "Admin";
             // 
             // mnuTest_xml
             // 
             this.mnuTest_xml.Name = "mnuTest_xml";
-            this.mnuTest_xml.Size = new System.Drawing.Size(162, 22);
+            this.mnuTest_xml.Size = new System.Drawing.Size(153, 22);
             this.mnuTest_xml.Text = "Test xml";
             this.mnuTest_xml.Click += new System.EventHandler(this.mnuTest_xml_Click);
             // 
             // mnuTest_DB
             // 
             this.mnuTest_DB.Name = "mnuTest_DB";
-            this.mnuTest_DB.Size = new System.Drawing.Size(162, 22);
+            this.mnuTest_DB.Size = new System.Drawing.Size(153, 22);
             this.mnuTest_DB.Text = "Test db";
             this.mnuTest_DB.Click += new System.EventHandler(this.mnuTest_DB_Click);
             // 
             // mnuProcess_Mail
             // 
             this.mnuProcess_Mail.Name = "mnuProcess_Mail";
-            this.mnuProcess_Mail.Size = new System.Drawing.Size(162, 22);
+            this.mnuProcess_Mail.Size = new System.Drawing.Size(153, 22);
             this.mnuProcess_Mail.Text = "Test processMail";
             this.mnuProcess_Mail.Click += new System.EventHandler(this.mnuProcess_Mail_Click);
             // 
@@ -151,6 +153,37 @@
             this.tabSearch.Text = "Search";
             this.tabSearch.UseVisualStyleBackColor = true;
             // 
+            // panel1
+            // 
+            this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
+            this.panel1.Location = new System.Drawing.Point(3, 3);
+            this.panel1.Name = "panel1";
+            this.panel1.Size = new System.Drawing.Size(468, 57);
+            this.panel1.TabIndex = 0;
+            // 
+            // tabBrowse
+            // 
+            this.tabBrowse.Controls.Add(this.dataGridView1);
+            this.tabBrowse.Location = new System.Drawing.Point(4, 22);
+            this.tabBrowse.Name = "tabBrowse";
+            this.tabBrowse.Size = new System.Drawing.Size(474, 304);
+            this.tabBrowse.TabIndex = 2;
+            this.tabBrowse.Text = "Browse";
+            this.tabBrowse.UseVisualStyleBackColor = true;
+            // 
+            // dataGridView1
+            // 
+            this.dataGridView1.AllowUserToAddRows = false;
+            this.dataGridView1.AllowUserToDeleteRows = false;
+            this.dataGridView1.AllowUserToOrderColumns = true;
+            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
+            this.dataGridView1.Location = new System.Drawing.Point(0, 0);
+            this.dataGridView1.Name = "dataGridView1";
+            this.dataGridView1.ReadOnly = true;
+            this.dataGridView1.Size = new System.Drawing.Size(474, 304);
+            this.dataGridView1.TabIndex = 0;
+            // 
             // tabLog
             // 
             this.tabLog.Controls.Add(this.textBox1);
@@ -173,16 +206,6 @@
             this.textBox1.Size = new System.Drawing.Size(468, 298);
             this.textBox1.TabIndex = 1;
             // 
-            // tabBrowse
-            // 
-            this.tabBrowse.Controls.Add(this.dataGridView1);
-            this.tabBrowse.Location = new System.Drawing.Point(4, 22);
-            this.tabBrowse.Name = "tabBrowse";
-            this.tabBrowse.Size = new System.Drawing.Size(474, 304);
-            this.tabBrowse.TabIndex = 2;
-            this.tabBrowse.Text = "Browse";
-            this.tabBrowse.UseVisualStyleBackColor = true;
-            // 
             // statusStrip1
             // 
             this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
@@ -196,29 +219,15 @@
             // toolStripStatusLabel1
             // 
             this.toolStripStatusLabel1.Name = "toolStripStatusLabel1";
-            this.toolStripStatusLabel1.Size = new System.Drawing.Size(118, 17);
+            this.toolStripStatusLabel1.Size = new System.Drawing.Size(109, 17);
             this.toolStripStatusLabel1.Text = "toolStripStatusLabel1";
             // 
-            // dataGridView1
+            // mnuClearData
             // 
-            this.dataGridView1.AllowUserToAddRows = false;
-            this.dataGridView1.AllowUserToDeleteRows = false;
-            this.dataGridView1.AllowUserToOrderColumns = true;
-            this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
-            this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
-            this.dataGridView1.Location = new System.Drawing.Point(0, 0);
-            this.dataGridView1.Name = "dataGridView1";
-            this.dataGridView1.ReadOnly = true;
-            this.dataGridView1.Size = new System.Drawing.Size(474, 304);
-            this.dataGridView1.TabIndex = 0;
-            // 
-            // panel1
-            // 
-            this.panel1.Dock = System.Windows.Forms.DockStyle.Top;
-            this.panel1.Location = new System.Drawing.Point(3, 3);
-            this.panel1.Name = "panel1";
-            this.panel1.Size = new System.Drawing.Size(468, 57);
-            this.panel1.TabIndex = 0;
+            this.mnuClearData.Name = "mnuClearData";
+            this.mnuClearData.Size = new System.Drawing.Size(153, 22);
+            this.mnuClearData.Text = "Clear data";
+            this.mnuClearData.Click += new System.EventHandler(this.mnuClearData_Click);
             // 
             // Form1
             // 
@@ -238,12 +247,12 @@
             this.menuStrip1.PerformLayout();
             this.tabControl1.ResumeLayout(false);
             this.tabSearch.ResumeLayout(false);
+            this.tabBrowse.ResumeLayout(false);
+            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.tabLog.ResumeLayout(false);
             this.tabLog.PerformLayout();
-            this.tabBrowse.ResumeLayout(false);
             this.statusStrip1.ResumeLayout(false);
             this.statusStrip1.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -269,6 +278,7 @@
         private System.Windows.Forms.StatusStrip statusStrip1;
         private System.Windows.Forms.ToolStripStatusLabel toolStripStatusLabel1;
         private System.Windows.Forms.Panel panel1;
+        private System.Windows.Forms.ToolStripMenuItem mnuClearData;
     }
 }
 

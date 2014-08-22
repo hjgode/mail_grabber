@@ -29,7 +29,7 @@ namespace Helpers
     /// additionally we use ReceivedBy, SentAt,
     /// SQLite DB access
     /// </summary>
-    public class LicenseData:IDisposable
+    public sealed class LicenseData:IDisposable
     {
         /// <summary>
         /// the deviceID of this license
@@ -77,47 +77,107 @@ namespace Helpers
         public DateTime _sendat;
 
         static string dataSource = utils.helpers.getAppPath() + "license_data.db";
-        static SQLiteConnection connection = null;
+        SQLiteDataAdapter sql_data_adapter;
+        DataSet data_set;
+        System.Windows.Forms.BindingSource bs;
 
-        SQLiteConnection getConnection()
+        SQLiteConnection _connection;
+        SQLiteConnection connection
         {
-            try
+            get
             {
-                if (connection == null)
+                try
                 {
-                    connection = new SQLiteConnection();
-                    connection.ConnectionString = "Data Source=" + dataSource;
-                    connection.Open();
-                    utils.helpers.addLog("db connection opened");
+                    if (_connection == null)
+                    {
+                        _connection = new SQLiteConnection();
+                        _connection.ConnectionString = "Data Source=" + dataSource;
+                        _connection.Open();
+                        utils.helpers.addLog("db connection opened");
+                    }
                 }
+                catch (SQLiteException ex)
+                {
+                    utils.helpers.addExceptionLog("add: " + ex.Message + "\r\n" + ex.StackTrace);
+                }
+                catch (Exception ex)
+                {
+                    utils.helpers.addExceptionLog("add: " + ex.Message + "\r\n" + ex.StackTrace);
+                }
+                return _connection;
             }
-            catch (SQLiteException ex)
-            {
-                utils.helpers.addExceptionLog("add: " + ex.Message + "\r\n" + ex.StackTrace);
-            }
-            catch (Exception ex)
-            {
-                utils.helpers.addExceptionLog("add: " + ex.Message + "\r\n" + ex.StackTrace);
-            }
-            return connection;
+            
         }
 
-        public LicenseData()
+        #region Singleton
+        //singleton pattern: http://msdn.microsoft.com/en-us/library/ff650316.aspx
+        private static volatile LicenseData instance;
+        private static object syncRoot = new Object();
+
+        private LicenseData()
         {
             createDB();
         }
+        public static LicenseData Instance
+        {
+            get 
+            {
+                if (instance == null) 
+                {
+                lock (syncRoot) 
+                {
+                    if (instance == null) 
+                        instance = new LicenseData();
+                }
+                }
+                return instance;
+            }
+        }
+        #endregion
 
-        public DataSet getDataset(){
-            DataSet data_set = new DataSet();
+        public System.Windows.Forms.BindingSource getDataset(){
+            data_set = new DataSet();
+            DataTable data_table = new DataTable();
+            bs = new System.Windows.Forms.BindingSource();
 
-            SQLiteCommand sql_command = getConnection().CreateCommand();
+            //SQLiteCommand sql_command = connection.CreateCommand();
             string command_string = "select * from licensedata";
 
-            SQLiteDataAdapter sql_data_adapter = new SQLiteDataAdapter(command_string, getConnection());
-            SQLiteCommandBuilder sql_command_builder = new SQLiteCommandBuilder(sql_data_adapter);
+            sql_data_adapter = new SQLiteDataAdapter(command_string, connection);
+            SQLiteCommandBuilder commandBuilder = new SQLiteCommandBuilder(sql_data_adapter);
 
             sql_data_adapter.Fill(data_set);
-            return data_set;
+            bs.DataSource = data_set.Tables[0];
+
+            return bs;
+        }
+
+        public void filterData(System.Windows.Forms.DataGridView dgv, string s)
+        {
+            DataTable dt = (DataTable)dgv.DataSource;
+            dt.DefaultView.RowFilter = "deviceid like '%" + s + "%'";
+        }
+
+        public bool clearData()
+        {
+            bool bRet = false;
+            SQLiteCommand command = connection.CreateCommand();
+            string cmdstr = "DELETE FROM licensedata where 1=1;";
+            try
+            {
+                command.CommandText = cmdstr;
+                int iRes = command.ExecuteNonQuery();
+                utils.helpers.addLog("deleted " + iRes.ToString() + " data");
+                command.Dispose();
+                sql_data_adapter.Update(data_set);
+                data_set.AcceptChanges();
+                bRet = true;
+            }
+            catch (Exception ex)
+            {
+                utils.helpers.addExceptionLog("clearData Exception: "+ex.Message);
+            }
+            return bRet;
         }
 
         bool createDB()
@@ -143,7 +203,7 @@ namespace Helpers
                 ";";
             try
             {
-                SQLiteConnection conn = getConnection();
+                SQLiteConnection conn = connection;
                 SQLiteCommand command = new SQLiteCommand(conn);
 
                 command.CommandText = cmdText;
@@ -179,7 +239,7 @@ namespace Helpers
 
         public void Dispose()
         {
-            SQLiteConnection conn = getConnection();
+            SQLiteConnection conn = connection;
             conn.Close();
             conn.Dispose();
             conn = null;
@@ -241,7 +301,7 @@ namespace Helpers
                     ")";
             try
             {
-                SQLiteConnection conn = getConnection();
+                SQLiteConnection conn = connection;
                 SQLiteCommand command = new SQLiteCommand(conn);
 
                 string namelist = getSQLFieldListForInsert();
@@ -249,6 +309,8 @@ namespace Helpers
                 command.CommandText = cmdText;
                 int iRes = command.ExecuteNonQuery();
                 command.Dispose();
+                sql_data_adapter.Update(data_set);
+                data_set.AcceptChanges();
                 bRes = true;
                 utils.helpers.addLog("added "+iRes.ToString()+" new data");
             }

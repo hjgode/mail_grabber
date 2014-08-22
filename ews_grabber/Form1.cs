@@ -25,7 +25,7 @@ namespace ews_grabber
             InitializeComponent();
             string appPath = utils.helpers.getAppPath();
             addLog("Please select Exchange-Connect to start test");
-            _licenseDataBase = new LicenseData();
+            _licenseDataBase = LicenseData.Instance;
             loadData();
         }
 
@@ -136,7 +136,7 @@ namespace ews_grabber
 
         private void mnuTest_DB_Click(object sender, EventArgs e)
         {
-            LicenseData ld = new LicenseData();
+            LicenseData ld = LicenseData.Instance;
             ld.add("cn70123", "customer", "key", "ordern#", DateTime.Now, "1234", "intermec", "CN70E", 1, "heinz-josef.gode@honeywel.com", DateTime.Now);
 
         }
@@ -183,14 +183,19 @@ namespace ews_grabber
             MailMessage msg = new MailMessage("E841719", sBody, "License Keys - Order: 15476: [NAU-1504] CETerm for Windows CE 6.0 / 5.0 / CE .NET", atts, DateTime.Now);
             int i = LicenseMail.processMail(msg, ref _licenseDataBase);
             dataGridView1.Refresh();
-
+            MessageBox.Show("pause");
+            dataGridView1.DataSource = _licenseDataBase.getDataset();
         }
 
         void loadData()
         {
-            LicenseData licenseData = new LicenseData();
+            dataGridView1.DataSource = _licenseDataBase.getDataset();//.Tables[0].DefaultView;
+            dataGridView1.Refresh();
+        }
 
-            dataGridView1.DataSource = licenseData.getDataset().Tables[0].DefaultView;
+        private void mnuClearData_Click(object sender, EventArgs e)
+        {
+            _licenseDataBase.clearData();
             dataGridView1.Refresh();
         }
     }

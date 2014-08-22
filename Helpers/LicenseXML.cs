@@ -23,6 +23,26 @@ namespace Helpers
             this.type = typeof(LicenseXML);
             this.s = new XmlSerializer(this.type);
         }
+        public static LicenseXML Deserialize(byte[] bytes)
+        {
+            XmlSerializer xs = new XmlSerializer(typeof(LicenseXML));
+            LicenseXML lic = new LicenseXML();
+            try
+            {
+                System.IO.MemoryStream ms = new MemoryStream(bytes);
+                ms.Position = 0;    //rewind to start
+                lic = (LicenseXML)xs.Deserialize(ms);
+            }
+            catch (XmlException ex)
+            {
+                System.Diagnostics.Debug.WriteLine("xml ex:" + ex.Message);
+            }
+            catch (Exception ex)
+            {
+                System.Diagnostics.Debug.WriteLine("xml ex:" + ex.Message);
+            }
+            return lic;
+        }
 
         public static LicenseXML Deserialize(Stream stream)
         {

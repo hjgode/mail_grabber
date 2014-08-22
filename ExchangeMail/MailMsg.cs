@@ -60,6 +60,8 @@ namespace ExchangeMail
             this._User = user;
             this._id = msg.Id.ToString();
             timestamp = msg.DateTimeSent;
+            this._Subject = msg.Subject;
+            this._Body = msg.Body;
 
             if (msg.HasAttachments)
             {
@@ -74,11 +76,11 @@ namespace ExchangeMail
                         //load the attachement
                         Microsoft.Exchange.WebServices.Data.FileAttachment fileAttachment = att as Microsoft.Exchange.WebServices.Data.FileAttachment;
                         //load into memory stream, seems the only stream supported
-                        using (System.IO.MemoryStream ms = new System.IO.MemoryStream(att.Size))
-                        {
-                            fileAttachment.Load(ms);
-                            oList.Add(new Attachement(ms, fileAttachment.Name));
-                        }
+                        System.IO.MemoryStream ms = new System.IO.MemoryStream(att.Size);
+                        fileAttachment.Load(ms);//blocks some time
+                        ms.Position = 0;
+                        oList.Add(new Attachement(ms, fileAttachment.Name));
+                        ms.Close();
                     }
                 }
                 /*

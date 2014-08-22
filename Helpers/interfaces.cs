@@ -39,7 +39,7 @@ namespace Helpers
     /// </summary>
     public interface IAttachement
     {
-        System.IO.Stream data { get; set; }
+        byte[] data { get; set; } //was a stream but memorystream was disposed between function calls
         long size { get; set; }
         string name{ get; set; }
     }
@@ -54,12 +54,12 @@ namespace Helpers
             get;
             set;
         }
-        public System.IO.Stream data
+        public byte[] data
         {
             get { return _stream; }
             set { _stream = value; }
         }
-        System.IO.Stream _stream;
+        byte[] _stream;
         public string name
         {
             get { return _name; }
@@ -68,7 +68,11 @@ namespace Helpers
         string _name;
         public Attachement(System.IO.Stream s, string n)
         {
-            this._stream = s;
+            s.Position = 0;
+            System.IO.MemoryStream ms=new System.IO.MemoryStream();
+            s.CopyTo(ms);
+            this._stream = ms.GetBuffer();
+            ms.Close(); ms.Dispose();
             this._name = n;
             size = s.Length;
         }
