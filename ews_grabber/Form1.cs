@@ -17,11 +17,16 @@ namespace ews_grabber
     {
         ews _ews;
         utils.userData _userData;
+        //data and database
+        LicenseData _licenseDataBase;
+
         public Form1()
         {
             InitializeComponent();
             string appPath = utils.helpers.getAppPath();
             addLog("Please select Exchange-Connect to start test");
+            _licenseDataBase = new LicenseData();
+            loadData();
         }
 
         List<Microsoft.Exchange.WebServices.Data.EmailMessage> mailList = new List<Microsoft.Exchange.WebServices.Data.EmailMessage>();
@@ -53,8 +58,15 @@ namespace ews_grabber
                     addLog("wait..." + args.strMessage);
                     break;
                 case StatusType.license_mail:
-                    addLog("license_mail: " + args.strMessage);
-                    Helpers.LicenseMail.processMail(args.mailmsg);
+                    if(args.strMessage!=null)
+                        addLog("license_mail: " + args.strMessage);
+                    else
+                        addLog("license_mail: " + args.mailmsg.Subject);
+                    if (args.mailmsg != null)
+                    {
+                        if (Helpers.LicenseMail.processMail(args.mailmsg, ref _licenseDataBase) > 0)
+                            dataGridView1.Refresh();
+                    }
                     break;
                 case StatusType.other_mail:
                     addLog("other_mail: " + args.strMessage);
@@ -125,8 +137,61 @@ namespace ews_grabber
         private void mnuTest_DB_Click(object sender, EventArgs e)
         {
             LicenseData ld = new LicenseData();
-            ld.add("cn70123", "customer", "key", "ordern#", DateTime.Now, "1234", "intermec", "CN70E", 1);
+            ld.add("cn70123", "customer", "key", "ordern#", DateTime.Now, "1234", "intermec", "CN70E", 1, "heinz-josef.gode@honeywel.com", DateTime.Now);
 
+        }
+
+        private void mnuProcess_Mail_Click(object sender, EventArgs e)
+        {
+            string sBody =
+                "Hello Yolanda  Xie,\r\n" +
+                "\r\n" +
+                "Thank you for purchasing Naurtech software. Here are the registration keys for your software licenses. Please note that both the License ID and Registration keys are case sensitive. You can find instructions to manually register your license at:\r\n" +
+                "http://www.naurtech.com/wiki/wiki.php?n=Main.TrainingVideoManualRegistration\r\n" +
+                "\r\n" +
+                "     Order Number:     15109\r\n" +
+                "     Order Date:       4/10/2014\r\n" +
+                "     Your PO Number:   PO93504\r\n" +
+                "     End Customer:     Honeywell\r\n" +
+                "     Product:          [NAU-1504] CETerm for Windows CE 6.0 / 5.0 / CE .NET\r\n" +
+                "     Quantity:         46\r\n" +
+                "\r\n" +
+                "     Qty Ordered...............: 46\r\n" +
+                "     Qty Shipped To Date.......: 46\r\n" +
+                "\r\n" +
+                "     Qty Shipped in this email.: 46\r\n" +
+                "\r\n" +
+                "\r\n" +
+                "**** Registration Keys for Version 5.7 ***** \r\n" +
+                "\r\n" +
+                "\r\n" +
+                "Version 5.1 and above support AUTOMATED LICENSE REGISTRATION. Please use the attached license file. This prevents you from having to type each key to register your copy of the software. Please refer to support wiki article http://www.naurtech.com/wiki/wiki.php?n=Main.AutoRegistration\r\n" +
+                "";
+
+            string testFile = utils.helpers.getAppPath() + "LicenseXMLFileSample.xml";
+            System.IO.MemoryStream ms = new System.IO.MemoryStream();
+            //read file into memorystream
+            using (System.IO.FileStream file = new System.IO.FileStream(testFile, System.IO.FileMode.Open, System.IO.FileAccess.Read))
+            {
+                byte[] bytes = new byte[file.Length];
+                file.Read(bytes, 0, (int)file.Length);
+                ms.Write(bytes, 0, (int)file.Length);
+                ms.Flush();
+            }
+
+            Attachement[] atts = new Attachement[] { new Attachement(ms, "test.xml") };
+            MailMessage msg = new MailMessage("E841719", sBody, "License Keys - Order: 15476: [NAU-1504] CETerm for Windows CE 6.0 / 5.0 / CE .NET", atts, DateTime.Now);
+            int i = LicenseMail.processMail(msg, ref _licenseDataBase);
+            dataGridView1.Refresh();
+
+        }
+
+        void loadData()
+        {
+            LicenseData licenseData = new LicenseData();
+
+            dataGridView1.DataSource = licenseData.getDataset().Tables[0].DefaultView;
+            dataGridView1.Refresh();
         }
     }
 }

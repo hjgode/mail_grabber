@@ -3,11 +3,17 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
+using System.Text.RegularExpressions;
+
 namespace Helpers
 {
 
-    public class LicenseMail
+    public class LicenseMail:IDisposable
     {
+        static LicenseData _licenseDataBase=null;
+
+        public string ReceivedBy;
+        public DateTime SendAt;
         public string OrderNumber;
         string OrderDate;
         string PONumber;
@@ -15,14 +21,31 @@ namespace Helpers
         string Product;
         int Quantity;
 
-        public LicenseMail(string on, string od, string po, string ec, string pr, int qu)
+        public LicenseMail(string rb, DateTime sa, string on, string od, string po, string ec, string pr, int qu)
         {
+            //email general
+            ReceivedBy = rb;
+            SendAt = sa;
+            //email body
             OrderNumber = on;
             OrderDate = od;
             PONumber = po;
             EndCustomer = ec;
             Product = pr;
             Quantity = qu;
+
+        }
+        
+        public LicenseMail(IMailMessage msg)
+        {
+            ReceivedBy = msg.User;
+            SendAt = msg.timestamp;
+        }
+
+        public void Dispose()
+        {
+            if (_licenseDataBase != null)
+                _licenseDataBase.Dispose();
         }
 
         //we need to parse the body for "Order number:", "Order Date" ...
@@ -39,29 +62,148 @@ namespace Helpers
         //Qty Shipped To Date.......: 28
 
         //Qty Shipped in this email.: 28
-
-        public static int processMail(IMailMessage m)// (Microsoft.Exchange.WebServices.Data.EmailMessage m)
+        public class licenseMailBodyData
         {
+            public string OrderNumber;
+            public DateTime OrderDate;
+            public string yourPOnumber;
+            public string EndCustomer;
+            public string Product;
+            public int Quantity;
+
+            public licenseMailBodyData()
+            {
+            }
+            public string dump()
+            {
+                StringBuilder sb = new StringBuilder();
+                sb.Append("OrderNumber: " + this.OrderNumber +"\r\n");
+                sb.Append("OrderDate: " + this.OrderDate.ToShortDateString() + "\r\n");
+                sb.Append("Your PO Number: " + this.yourPOnumber + "\r\n");
+                sb.Append("EndCustomer: " + this.EndCustomer + "\r\n");
+                sb.Append("Product: " + this.Product + "\r\n");
+                sb.Append("Quantity: " + this.Quantity.ToString() + "\r\n");
+                return sb.ToString();
+            }
+            public static licenseMailBodyData get(IMailMessage msg)
+            {
+                licenseMailBodyData data = new licenseMailBodyData();
+                string sBody = msg.Body;
+                sBody = sBody.Replace("\r\n", ";");
+                var expression = new Regex(
+                    @"Order Number:[ ]+(?<order_number>[\S]+);" + 
+                    @".+Order Date:[ ]+(?<order_date>[\S]+);" +
+                    @".+Your PO Number:[ ]+(?<po_number>[\S]+);"+
+                    @".+End Customer:[ ]+(?<end_customer>[\S]+);"+
+                    ""
+                );
+
+                var match = expression.Match(sBody);
+                //utils.helpers.addLog(string.Format("order_number......{0}", match.Groups["order_number"]));
+                data.OrderNumber = match.Groups["order_number"].Value;
+                
+                //utils.helpers.addLog(string.Format("order_date........{0}", match.Groups["order_date"]));
+                data.OrderDate = getDateTimeFromUSdateString(match.Groups["order_date"].Value);
+                
+                //utils.helpers.addLog(string.Format("po_number........ {0}", match.Groups["po_number"]));
+                data.yourPOnumber = match.Groups["po_number"].Value;
+
+                //utils.helpers.addLog(string.Format("end_customer..... {0}", match.Groups["end_customer"]));
+                data.EndCustomer = match.Groups["end_customer"].Value;
+
+                expression = new Regex(@".+Product:[ ]+(?<product>.+);.+Quantity");
+                match = expression.Match(sBody); 
+                //utils.helpers.addLog(string.Format("product...........{0}", match.Groups["product"]));
+                data.Product = match.Groups["product"].Value;
+
+                expression = new Regex(@".+Quantity:[ ]+(?<quantity>[0-9]+);");
+                match = expression.Match(sBody); 
+                //utils.helpers.addLog(string.Format("quantity..........{0}", match.Groups["quantity"]));
+                data.Quantity = Convert.ToInt16(match.Groups["quantity"].Value);
+
+                return data;
+            }
+            static DateTime getDateTimeFromUSdateString(string s)
+            {
+                DateTime dt=new DateTime();
+                string[] ds = s.Split('/');
+                if(ds.Length==3)
+                    dt=new DateTime(Convert.ToInt16(ds[2]), Convert.ToInt16(ds[0]), Convert.ToInt16(ds[1]));
+                else
+                    dt=new DateTime(1999, 1, 1);
+                return dt;
+            }
+        }
+        public static licenseMailBodyData processMailBody(IMailMessage msg)
+        {
+            licenseMailBodyData bodyData = licenseMailBodyData.get(msg);
+            return bodyData;
+        }
+
+        public static int processMail(IMailMessage m, ref LicenseData _licenseData)// (Microsoft.Exchange.WebServices.Data.EmailMessage m)
+        {
+
             int iRet = 0;
             if (m == null)
             {
                 utils.helpers.addLog("processMail: null msg");
                 return iRet;
             }
+            if (_licenseDataBase == null)
+                _licenseDataBase = _licenseData;
+
             try
             {
-                utils.helpers.addLog(m.User + m.Subject + "# attachements: " + m.Attachements.Length.ToString() + "\r\n");
-                //get order ID out of subject text
-                string sOrderNumber = "";//TODO
+                utils.helpers.addLog(m.User +","+ m.Subject + ", # attachements: " + m.Attachements.Length.ToString() + "\r\n");
+                //get data from email
+                string sReceivededBy = m.User;
+                DateTime dtSendAt = m.timestamp;
+                
+                //get data from body
+                licenseMailBodyData bodyData = new licenseMailBodyData();
+                bodyData = processMailBody(m);
+                utils.helpers.addLog( bodyData.dump() );
 
                 if (m.Attachements.Length > 0)
                 {
                     //process each attachement
                     foreach (Attachement a in m.Attachements)
                     {
-                        processAttachement(a, m.User, sOrderNumber, m.timestamp);
+                        try
+                        {
+                            utils.helpers.addLog("start processAttachement...\r\n");
+                            iRet+=processAttachement(a, bodyData, m);
+                            utils.helpers.addLog("processAttachement done\r\n");
+                        }
+                        catch (Exception ex)
+                        {
+                            utils.helpers.addExceptionLog(ex.Message);
+                        }
                     }
 
+                }
+            }
+            catch (Exception ex)
+            {
+                utils.helpers.addLog("Exception: " + ex.Message);
+            }
+            utils.helpers.addLog("processMail did process " + iRet.ToString() + " files");
+            return iRet;
+        }
+
+
+        public static int processAttachement(Attachement att, licenseMailBodyData data, IMailMessage mail)
+        {
+            int iCount=0;
+            LicenseXML xmlData = LicenseXML.Deserialize(att.data);
+            if (_licenseDataBase == null)
+                System.Diagnostics.Debugger.Break();
+            foreach(license ldata in xmlData.licenses){
+                utils.helpers.addLog("start _licenseDataBase.add() ...\r\n");
+                if (_licenseDataBase.add(ldata.id, ldata.user, ldata.key, data.OrderNumber, data.OrderDate, data.yourPOnumber, data.EndCustomer, data.Product, data.Quantity, mail.User, mail.timestamp))
+                    iCount++;
+                utils.helpers.addLog("start _licenseDataBase.add() done\r\n");
+            }
                     #region alternative_code
                     /*
                     // Request all the attachments on the email message. This results in a GetItem operation call to EWS.
@@ -108,19 +250,7 @@ namespace Helpers
                     }
                     */
                     #endregion
-                }
-            }
-            catch (Exception ex)
-            {
-                utils.helpers.addLog("Exception: " + ex.Message);
-            }
-            utils.helpers.addLog("processMail did process " + iRet.ToString() + " files");
-            return iRet;
-        }
-
-
-        public static void processAttachement(Attachement att, string user, string order, DateTime dt)
-        {
+            return iCount;
         }
     }
 }

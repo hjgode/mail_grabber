@@ -227,12 +227,15 @@ namespace ExchangeMail
                         helpers.addLog("found item...");
                         if (item is EmailMessage)
                         {
+                            EmailMessage mailmessage = item as EmailMessage;
+                            mailmessage.Load(); //load data from server
+
                             helpers.addLog("\t is email ...");
 
                             // If the item is an e-mail message, write the sender's name.
-                            helpers.addLog((item as EmailMessage).Sender.Name + ": " + (item as EmailMessage).Subject);
+                            helpers.addLog(mailmessage.Sender.Name + ": " + mailmessage.Subject);
 
-                            MailMsg myMailMsg = new MailMsg(item as EmailMessage, _ews.UserData.sUser);
+                            MailMsg myMailMsg = new MailMsg(mailmessage, _ews.UserData.sUser);
 
                             // Bind to an existing message using its unique identifier.
                             //EmailMessage message = EmailMessage.Bind(service, new ItemId(item.Id.UniqueId));
