@@ -47,6 +47,8 @@ class MForm : Form//, IDisposable
         dgv.Size = new Size(350, 300);
         dgv.TabIndex = 0;
         dgv.Parent = this;        
+		dgv.ReadOnly=true;
+		dgv.AllowUserToAddRows=false;
     }
 
 	void createData(){
@@ -90,50 +92,49 @@ class MForm : Form//, IDisposable
                 da.Fill(ds, "Cars");        
 				cmdBuilder = new SqliteCommandBuilder(da);
 
-				SqliteCommand insCmd = cmdBuilder.GetInsertCommand();
-				// INSERT INTO [Cars] ([Name], [Note]) VALUES (@param1, @param2)
-
                 dgv.DataSource = ds.Tables["Cars"];
 
 				da.InsertCommand=
 					new SqliteCommand("INSERT INTO [Cars] ([id], [Name], [Note]) VALUES (NULL, @param1, @param2)");
 
-				addRow("audi","another note");
 				addRowSQL("audi sql","another note");
 
 				da.Update(ds.Tables[0]);
                          
     }
 
+	void doRefresh(){
+		dgv.ResetBindings();
+		//dgv.DataSource=null;
+		dgv.DataSource=ds.Tables[0];
+	}
+
 	void addRowSQL(string sName, string sNote){
+		//change sql data
 		SqliteCommand cmd=new SqliteCommand(
-			string.Format("INSERT INTO Cars (id,name,note) VALUES(NULL,'{0}','{1}');",
+			string.Format("INSERT INTO Cars (id,name,note) VALUES(NULL,'{0}sql','{1}');",
 		              sName, sNote),con);
 		cmd.ExecuteNonQuery();
+		//get autoincrement value
 		cmd=new SqliteCommand("SELECT last_insert_rowid()",con);
 		long lastID = (long) cmd.ExecuteScalar();
 
 		System.Console.WriteLine("added new row with "+lastID);
 
-		ds.AcceptChanges();
-		da.Update(ds.Tables[0]);
-		dgv.Refresh();
-	}
-
-	void addRow(string sName, string sNote){
+		//change datagrid
 		DataTable dt = ds.Tables[0];
 		DataRow dr = dt.NewRow();
 		dr["name"]=sName;
 		dr["note"]=sNote;
+		dr["id"]=lastID;
 		dt.Rows.Add(dr);
-
-		System.Console.WriteLine(da.InsertCommand.CommandText);
-
 		dt.AcceptChanges();
 		ds.AcceptChanges();
-
 		da.Update(ds.Tables[0]);
+		doRefresh();
+
 	}
+
 }
 
 class MApplication 
