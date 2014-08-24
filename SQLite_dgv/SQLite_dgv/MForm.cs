@@ -8,9 +8,9 @@ class MForm : Form//, IDisposable
 {
 
     private DataGridView dgv = null;      
-    private DataSet ds = null;
-	SqliteDataAdapter da=null;
-	SqliteConnection con;
+        string cs = "URI=file:test.db";
+	TextBox txtFilter = null;
+	bool bFiltered=false;
 
 	Timer timer;
 //	public void Dispose (){
@@ -43,94 +43,122 @@ class MForm : Form//, IDisposable
     {    
         dgv = new DataGridView();
 
-        dgv.Location = new Point(8, 0);
+        dgv.Location = new Point(8, 30);
         dgv.Size = new Size(350, 300);
         dgv.TabIndex = 0;
         dgv.Parent = this;        
 		dgv.ReadOnly=true;
 		dgv.AllowUserToAddRows=false;
+
+		txtFilter=new TextBox();
+		txtFilter.Location=new Point(8,8);
+		txtFilter.Size=new System.Drawing.Size(200,80);
+		txtFilter.Parent=this;
+
+		txtFilter.TextChanged+=new EventHandler(txt_Changed);
     }
 
+	void txt_Changed(object s, EventArgs a){
+		if(txtFilter.Text.Length>0){
+			filterData(txtFilter.Text);
+		}
+		else{
+			DataTable dt = (DataTable)dgv.DataSource;
+			dt.DefaultView.RowFilter = "";
+			bFiltered=false;
+		}
+	}
+
+	void filterData(string sID){
+		DataTable dt = (DataTable)dgv.DataSource;
+		dt.DefaultView.RowFilter = "Name like '%" + txtFilter.Text + "%'";
+		bFiltered=true;		
+	}
+
 	void createData(){
-        string cs = "URI=file:test.db";
 		string createCmd = "CREATE TABLE IF NOT EXISTS Cars "+
 			"( id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "+
 			" Name NVarChar, "+
 			" Note NVarChar"+
 				");";
-		string someDataInsert=
-			"INSERT INTO Cars (id, Name, Note) VALUES ("+
-				"NULL, 'BMW', 'Bayern')";
+//		string someDataInsert=
+//			"INSERT INTO Cars (id, Name, Note) VALUES ("+
+//				"NULL, 'BMW', 'Bayern')";
+		using(SqliteConnection connection=new SqliteConnection(cs)){
+			SqliteCommand command = new SqliteCommand(createCmd, connection);
+			int iRes=command.ExecuteNonQuery();
+		}
 
-		SqliteCommand command = new SqliteCommand();
-		command.CommandText=createCmd;
-		command.Connection=con;
-		int iRes=command.ExecuteNonQuery();
-
-
-		command.CommandText=someDataInsert;
-		iRes=command.ExecuteNonQuery();
+		//command.CommandText=someDataInsert;
+		//iRes=command.ExecuteNonQuery();
 
 	}
 
     void InitData()
     {    
-        string cs = "URI=file:test.db";
 
 //		createData();
 
         string stm = "SELECT * FROM Cars";
-
-		con = new SqliteConnection(cs);
-        
-            con.Open();
-
-            ds = new DataSet();
-			SqliteCommandBuilder cmdBuilder;
-			da = new SqliteDataAdapter(stm, con);
-
-                da.Fill(ds, "Cars");        
-				cmdBuilder = new SqliteCommandBuilder(da);
-
-                dgv.DataSource = ds.Tables["Cars"];
-
+		using(SqliteConnection connection=new SqliteConnection(cs)){
+			connection.Open();
+            System.Data.DataSet ds = new DataSet();
+			SqliteDataAdapter da = new SqliteDataAdapter(stm, connection);
+			SqliteCommandBuilder cmdBuilder=new SqliteCommandBuilder(da);
 				da.InsertCommand=
 					new SqliteCommand("INSERT INTO [Cars] ([id], [Name], [Note]) VALUES (NULL, @param1, @param2)");
 
-				addRowSQL("audi sql","another note");
-
-				da.Update(ds.Tables[0]);
-                         
+                da.Fill(ds, "Cars");        
+                dgv.DataSource = ds.Tables["Cars"];
+		}                         
     }
 
 	void doRefresh(){
+		if(bFiltered)
+			return;
+		int iRow=0, iCol=0;
+		if(dgv.Rows.Count>0){
+			iRow=dgv.CurrentCell.RowIndex;
+			iCol=dgv.CurrentCell.ColumnIndex;
+		}
 		dgv.ResetBindings();
 		//dgv.DataSource=null;
-		dgv.DataSource=ds.Tables[0];
+		using(SqliteConnection connection=new SqliteConnection(cs)){
+			connection.Open();
+			System.Data.DataSet ds=new DataSet();
+			SqliteDataAdapter da = new SqliteDataAdapter("SELECT * FROM Cars", connection);
+			da.Fill(ds);
+			dgv.DataSource=ds.Tables[0];
+		}
+		if(dgv.Rows.Count>0){
+			dgv.CurrentCell=dgv.Rows[iRow].Cells[iCol];
+		}
 	}
 
 	void addRowSQL(string sName, string sNote){
 		//change sql data
-		SqliteCommand cmd=new SqliteCommand(
-			string.Format("INSERT INTO Cars (id,name,note) VALUES(NULL,'{0}sql','{1}');",
-		              sName, sNote),con);
-		cmd.ExecuteNonQuery();
-		//get autoincrement value
-		cmd=new SqliteCommand("SELECT last_insert_rowid()",con);
-		long lastID = (long) cmd.ExecuteScalar();
+		using (SqliteConnection connection = new SqliteConnection(cs)){
+			connection.Open();
+			SqliteCommand cmd=new SqliteCommand(
+				string.Format("INSERT INTO Cars (id,name,note) VALUES(NULL,'{0}sql','{1}');",
+			              sName, sNote),connection);
+			cmd.ExecuteNonQuery();
+			//get autoincrement value
+			cmd=new SqliteCommand("SELECT last_insert_rowid()",connection);
+			long lastID = (long) cmd.ExecuteScalar();
 
-		System.Console.WriteLine("added new row with "+lastID);
-
+			System.Console.WriteLine("added new row with "+lastID);
+		}
 		//change datagrid
-		DataTable dt = ds.Tables[0];
-		DataRow dr = dt.NewRow();
-		dr["name"]=sName;
-		dr["note"]=sNote;
-		dr["id"]=lastID;
-		dt.Rows.Add(dr);
-		dt.AcceptChanges();
-		ds.AcceptChanges();
-		da.Update(ds.Tables[0]);
+//		DataTable dt = ds.Tables[0];
+//		DataRow dr = dt.NewRow();
+//		dr["name"]=sName;
+//		dr["note"]=sNote;
+//		dr["id"]=lastID;
+//		dt.Rows.Add(dr);
+//		dt.AcceptChanges();
+//		ds.AcceptChanges();
+//		da.Update(ds.Tables[0]);
 		doRefresh();
 
 	}
