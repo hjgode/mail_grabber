@@ -1,8 +1,10 @@
 using System;
 using System.Windows.Forms;
 using System.Drawing;
+using System.Xml;
 using System.Data;
-using Mono.Data.Sqlite;
+using System.Data.SQLite;
+
 
 class MForm : Form//, IDisposable
 {
@@ -76,6 +78,9 @@ class MForm : Form//, IDisposable
 	}
 
 	void createData(){
+        if (System.IO.File.Exists("test.db"))
+            return;
+
 		string createCmd = "CREATE TABLE IF NOT EXISTS Cars "+
 			"( id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT, "+
 			" Name NVarChar, "+
@@ -84,8 +89,9 @@ class MForm : Form//, IDisposable
 //		string someDataInsert=
 //			"INSERT INTO Cars (id, Name, Note) VALUES ("+
 //				"NULL, 'BMW', 'Bayern')";
-		using(SqliteConnection connection=new SqliteConnection(cs)){
-			SqliteCommand command = new SqliteCommand(createCmd, connection);
+		using(SQLiteConnection connection=new SQLiteConnection(cs)){
+            connection.Open();
+			SQLiteCommand command = new SQLiteCommand(createCmd, connection);
 			int iRes=command.ExecuteNonQuery();
 		}
 
@@ -95,18 +101,17 @@ class MForm : Form//, IDisposable
 	}
 
     void InitData()
-    {    
-
-//		createData();
+    {
+        createData();
 
         string stm = "SELECT * FROM Cars";
-		using(SqliteConnection connection=new SqliteConnection(cs)){
+		using(SQLiteConnection connection=new SQLiteConnection(cs)){
 			connection.Open();
             System.Data.DataSet ds = new DataSet();
-			SqliteDataAdapter da = new SqliteDataAdapter(stm, connection);
-			SqliteCommandBuilder cmdBuilder=new SqliteCommandBuilder(da);
+			SQLiteDataAdapter da = new SQLiteDataAdapter(stm, connection);
+			SQLiteCommandBuilder cmdBuilder=new SQLiteCommandBuilder(da);
 				da.InsertCommand=
-					new SqliteCommand("INSERT INTO [Cars] ([id], [Name], [Note]) VALUES (NULL, @param1, @param2)");
+					new SQLiteCommand("INSERT INTO [Cars] ([id], [Name], [Note]) VALUES (NULL, @param1, @param2)");
 
                 da.Fill(ds, "Cars");        
                 dgv.DataSource = ds.Tables["Cars"];
@@ -123,10 +128,10 @@ class MForm : Form//, IDisposable
 		}
 		dgv.ResetBindings();
 		//dgv.DataSource=null;
-		using(SqliteConnection connection=new SqliteConnection(cs)){
+		using(SQLiteConnection connection=new SQLiteConnection(cs)){
 			connection.Open();
 			System.Data.DataSet ds=new DataSet();
-			SqliteDataAdapter da = new SqliteDataAdapter("SELECT * FROM Cars", connection);
+			SQLiteDataAdapter da = new SQLiteDataAdapter("SELECT * FROM Cars", connection);
 			da.Fill(ds);
 			dgv.DataSource=ds.Tables[0];
 		}
@@ -137,14 +142,14 @@ class MForm : Form//, IDisposable
 
 	void addRowSQL(string sName, string sNote){
 		//change sql data
-		using (SqliteConnection connection = new SqliteConnection(cs)){
+		using (SQLiteConnection connection = new SQLiteConnection(cs)){
 			connection.Open();
-			SqliteCommand cmd=new SqliteCommand(
+			SQLiteCommand cmd=new SQLiteCommand(
 				string.Format("INSERT INTO Cars (id,name,note) VALUES(NULL,'{0}sql','{1}');",
 			              sName, sNote),connection);
 			cmd.ExecuteNonQuery();
 			//get autoincrement value
-			cmd=new SqliteCommand("SELECT last_insert_rowid()",connection);
+			cmd=new SQLiteCommand("SELECT last_insert_rowid()",connection);
 			long lastID = (long) cmd.ExecuteScalar();
 
 			System.Console.WriteLine("added new row with "+lastID);

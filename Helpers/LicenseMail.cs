@@ -10,7 +10,7 @@ namespace Helpers
 
     public class LicenseMail:IDisposable
     {
-        static LicenseData _licenseDataBase=null;
+        static LicenseDataBase _licenseDataBase;
 
         public string ReceivedBy;
         public DateTime SendAt;
@@ -20,6 +20,10 @@ namespace Helpers
         string EndCustomer;
         string Product;
         int Quantity;
+
+        public LicenseMail()
+        {
+        }
 
         public LicenseMail(string rb, DateTime sa, string on, string od, string po, string ec, string pr, int qu)
         {
@@ -140,7 +144,7 @@ namespace Helpers
             return bodyData;
         }
 
-        public static int processMail(IMailMessage m, ref LicenseData _licenseData)// (Microsoft.Exchange.WebServices.Data.EmailMessage m)
+        public int processMail(IMailMessage m, ref LicenseDataBase _licenseData)// (Microsoft.Exchange.WebServices.Data.EmailMessage m)
         {
 
             int iRet = 0;
@@ -172,7 +176,7 @@ namespace Helpers
                         try
                         {
                             utils.helpers.addLog("start processAttachement...\r\n");
-                            iRet+=processAttachement(a, bodyData, m);
+                            iRet += processAttachement(a, bodyData, m);
                             utils.helpers.addLog("processAttachement done\r\n");
                         }
                         catch (Exception ex)
@@ -192,17 +196,21 @@ namespace Helpers
         }
 
 
-        public static int processAttachement(Attachement att, licenseMailBodyData data, IMailMessage mail)
+        public int processAttachement(Attachement att, licenseMailBodyData data, IMailMessage mail)
         {
             int iCount=0;
             LicenseXML xmlData = LicenseXML.Deserialize(att.data);
             if (_licenseDataBase == null)
                 System.Diagnostics.Debugger.Break();
+
             foreach(license ldata in xmlData.licenses){
                 utils.helpers.addLog("start _licenseDataBase.add() ...\r\n");
+                LicenseData licenseData = new LicenseData(ldata.id, ldata.user, ldata.key, data.OrderNumber, data.OrderDate, data.yourPOnumber, data.EndCustomer, data.Product, data.Quantity, mail.User, mail.timestamp);
+                //if (_licenseDataBase.addQueued(licenseData))
                 if (_licenseDataBase.add(ldata.id, ldata.user, ldata.key, data.OrderNumber, data.OrderDate, data.yourPOnumber, data.EndCustomer, data.Product, data.Quantity, mail.User, mail.timestamp))
                     iCount++;
                 utils.helpers.addLog("start _licenseDataBase.add() done\r\n");
+               
             }
                     #region alternative_code
                     /*
@@ -252,5 +260,6 @@ namespace Helpers
                     #endregion
             return iCount;
         }
+
     }
 }

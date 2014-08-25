@@ -68,16 +68,25 @@ namespace Helpers
             sr.Close();
             return lic;
         }
-        public static void serialize(LicenseXML licensexml, string sXMLfile)
+        public static bool serialize(LicenseXML licensexml, string sXMLfile)
         {
-            XmlSerializer xs = new XmlSerializer(typeof(LicenseXML));
-            //omit xmlns:xsi from xml output
-            //Create our own namespaces for the output
-            XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-            //Add an empty namespace and empty value
-            ns.Add("", "");            
-            StreamWriter sw = new StreamWriter(sXMLfile);
-            xs.Serialize(sw, licensexml, ns);
+            try
+            {
+                XmlSerializer xs = new XmlSerializer(typeof(LicenseXML));
+                //omit xmlns:xsi from xml output
+                //Create our own namespaces for the output
+                XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
+                //Add an empty namespace and empty value
+                ns.Add("", "");
+                StreamWriter sw = new StreamWriter(sXMLfile);
+                xs.Serialize(sw, licensexml, ns);
+                return true;
+            }
+            catch (Exception ex)
+            {
+                utils.helpers.addExceptionLog(ex.Message);
+                return false;
+            }
         }
         public static class TestXML
         {

@@ -55,6 +55,7 @@
     <Compile Include="helpers.cs" />
     <Compile Include="interfaces.cs" />
     <Compile Include="LicenseData.cs" />
+    <Compile Include="LicenseDataBase.cs" />
     <Compile Include="LicenseMail.cs" />
     <Compile Include="LicenseXML.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>

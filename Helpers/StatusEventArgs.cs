@@ -15,7 +15,8 @@ namespace Helpers
         url_changed,
         validating,
         license_mail,
-        other_mail
+        other_mail,
+        bulk_mail
     }
 
     public class StatusEventArgs:EventArgs
