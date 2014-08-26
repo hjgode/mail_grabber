@@ -8,22 +8,102 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace ews_grabber.Properties
-{
-
-
+namespace ews_grabber.Properties {
+    
+    
     [global::System.Runtime.CompilerServices.CompilerGeneratedAttribute()]
     [global::System.CodeDom.Compiler.GeneratedCodeAttribute("Microsoft.VisualStudio.Editors.SettingsDesigner.SettingsSingleFileGenerator", "11.0.0.0")]
-    internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase
-    {
-
+    internal sealed partial class Settings : global::System.Configuration.ApplicationSettingsBase {
+        
         private static Settings defaultInstance = ((Settings)(global::System.Configuration.ApplicationSettingsBase.Synchronized(new Settings())));
-
-        public static Settings Default
-        {
-            get
-            {
+        
+        public static Settings Default {
+            get {
                 return defaultInstance;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("https://az18-cas-01.global.ds.honeywell.com/EWS/Exchange.asmx")]
+        public string ExchangeServiceURL {
+            get {
+                return ((string)(this["ExchangeServiceURL"]));
+            }
+            set {
+                this["ExchangeServiceURL"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("fr44proxy.honeywell.com")]
+        public string ExchangeWebProxy {
+            get {
+                return ((string)(this["ExchangeWebProxy"]));
+            }
+            set {
+                this["ExchangeWebProxy"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("8080")]
+        public int EchangeWebProxyPort {
+            get {
+                return ((int)(this["EchangeWebProxyPort"]));
+            }
+            set {
+                this["EchangeWebProxyPort"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ExchangeUsername {
+            get {
+                return ((string)(this["ExchangeUsername"]));
+            }
+            set {
+                this["ExchangeUsername"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("")]
+        public string ExchangeDomainname {
+            get {
+                return ((string)(this["ExchangeDomainname"]));
+            }
+            set {
+                this["ExchangeDomainname"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("licensedata.db")]
+        public string SQLiteDataBaseFilename {
+            get {
+                return ((string)(this["SQLiteDataBaseFilename"]));
+            }
+            set {
+                this["SQLiteDataBaseFilename"] = value;
+            }
+        }
+        
+        [global::System.Configuration.UserScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.DefaultSettingValueAttribute("False")]
+        public bool UseWebProxy {
+            get {
+                return ((bool)(this["UseWebProxy"]));
+            }
+            set {
+                this["UseWebProxy"] = value;
             }
         }
     }

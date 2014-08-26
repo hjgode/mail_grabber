@@ -51,8 +51,30 @@ namespace Helpers
         Thread processQueueThread=null;
         static bool bRunProcessQueueThread = true;
 
-        static string dataSource = utils.helpers.getAppPath() + "license_data.db";
-        static string connectionString = "Data Source=" + dataSource;
+        static string _dataSource = "";
+        /// <summary>
+        /// hold the file name of the database file
+        /// </summary>
+        string dataSource
+        {
+            get { return _dataSource; }
+            set { _dataSource = value; }
+        }
+        string _connectionString;
+
+        /// <summary>
+        /// hold the connection string
+        /// when set, provide only the file name
+        /// </summary>
+        string connectionString
+        {
+            get
+            {
+                _connectionString = "Data Source=" + _dataSource;
+                return _connectionString;
+            }
+            set { _connectionString = "Data Source=" + value; }
+        }
         System.Windows.Forms.DataGridView _dgv;
 
         /// <summary>
@@ -98,8 +120,49 @@ namespace Helpers
         */
         #endregion
 
+        public bool bIsValidDB
+        {
+            get;
+            private set;
+        }
 
-        public LicenseDataBase(ref System.Windows.Forms.DataGridView dgv){
+        bool checkDBFile(string sFile)
+        {
+            bool bRet = false;
+            if (!System.IO.File.Exists(sFile))
+            {
+                //create empty database
+                bRet=createDB();
+            }
+            try
+            {
+                System.IO.FileInfo fi = new System.IO.FileInfo(sFile);
+                if (fi.Length == 0)
+                {
+                    bRet = createDB();
+                }
+                else
+                { //assume a valid file
+                    bRet = true;
+                }
+            }
+            catch (Exception)
+            {
+                return false;
+            }
+            bIsValidDB = bRet;
+            return bRet;
+        }
+
+        public LicenseDataBase(ref System.Windows.Forms.DataGridView dgv, string sDBFile){
+            dataSource = sDBFile;
+            connectionString = sDBFile;
+            if (!checkDBFile(sDBFile))
+            {
+                bIsValidDB = false;
+                return;
+            }
+            utils.helpers.addLog("Using database: " + sDBFile);
             _dgv=dgv;
             /*
             processQueueThread = new Thread(processingthread);
@@ -207,7 +270,8 @@ namespace Helpers
                     utils.helpers.addLog("deleted " + iRes.ToString() + " data");
                     command.Dispose();
 
-                    doRefresh(ref _dgv);
+                    //doRefresh(ref _dgv);
+
                     bRet = true;
                 }
                 catch (Exception ex)
@@ -290,7 +354,7 @@ namespace Helpers
             utils.helpers.addLog("LicenseDATA Disposed");
         }
 
-        public bool add(            
+        public int add(            
             string deviceid,
             string customer,
             string key,
@@ -303,11 +367,12 @@ namespace Helpers
             string receivedby,
             DateTime sendat)
         {
+            int LastInsert = -1;
             bool bRes = false;
             if (existsData(deviceid, key))
             {
                 utils.helpers.addLog("add abandoned for existing datarow");
-                return true;
+                return LastInsert;
             }
             LicenseData licenseData = new LicenseData();
             licenseData._deviceid = deviceid;
@@ -360,9 +425,19 @@ namespace Helpers
                     // Einfügen eines Test-Datensatzes.
                     command.CommandText = cmdText;
                     int iRes = command.ExecuteNonQuery();
+
+                    //get id of last insert
+                    command.CommandText = "select last_insert_rowid()";
+                    // The row ID is a 64-bit value - cast the Command result to an Int64.
+                    //
+                    long LastRowID64 = (long)command.ExecuteScalar();
+                    // Then grab the bottom 32-bits as the unique ID of the row.
+                    LastInsert = (int)LastRowID64;
+
                     command.Dispose();
-                    doRefresh(ref _dgv);
-                    bRes = true;
+                    
+                    //doRefresh(ref _dgv);
+                    
                     utils.helpers.addLog("added " + iRes.ToString() + " new data");
                 }
             }
@@ -377,7 +452,7 @@ namespace Helpers
             finally
             {
             }
-            return bRes;
+            return LastInsert;
         }
 
         public static void processingthread(object param)
@@ -498,14 +573,14 @@ namespace Helpers
         /// use manual doRefresh
         /// </summary>
         /// <param name="licenseData"></param>
-        /// <returns></returns>
-        bool add(LicenseData licenseData)
+        /// <returns>id of last inserted data or -1 if failed</returns>
+        int add(LicenseData licenseData)
         {
-            bool bRes = false;
+            int LastRowID = -1;
             if (existsData(licenseData._deviceid, licenseData._key))
             {
                 utils.helpers.addLog("add abandoned for existing datarow");
-                return true;
+                return -1;
             }
             string cmdText = "INSERT INTO licensedata " +
                     getSQLFieldListForInsert() +
@@ -564,7 +639,7 @@ namespace Helpers
                     //
                     long LastRowID64 = (long)command.ExecuteScalar();
                     // Then grab the bottom 32-bits as the unique ID of the row.
-                    int LastRowID = (int)LastRowID64;
+                    LastRowID = (int)LastRowID64;
                     command.Dispose();
 
                     /*
@@ -586,7 +661,6 @@ namespace Helpers
                     _dgv.Rows.Add(dr);
                     */
 
-                    bRes = true;
                     utils.helpers.addLog("added " + iRes.ToString() + " new data");
                 }
             }
@@ -601,7 +675,7 @@ namespace Helpers
             finally
             {
             }
-            return bRes;
+            return LastRowID ;
         }
 
         string getSQLFieldListForInsert()

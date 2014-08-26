@@ -23,25 +23,31 @@ namespace Helpers
     {
         public StatusType eStatus;
         public string strMessage;
-        public IMailMessage mailmsg { 
-            get { return myMailMsg; }
-            private set { myMailMsg = value; }
-        }
-        IMailMessage myMailMsg;
+
+        public LicenseData licenseData;
+
+        //public IMailMessage mailmsg { 
+        //    get { return myMailMsg; }
+        //    private set { myMailMsg = value; }
+        //}
+        //IMailMessage myMailMsg;
+        
         public StatusEventArgs(StatusType state)
         {
             eStatus = state;
         }
+        
         public StatusEventArgs(StatusType state, string msg)
         {
             eStatus = state;
             strMessage = msg;
         }
-        public StatusEventArgs(StatusType state, IMailMessage msg)
+        
+        public StatusEventArgs(StatusType state, LicenseData _licenseData)
         {
             eStatus = state;
-            strMessage = msg.Subject;
-            myMailMsg = msg;
+            strMessage = _licenseData._deviceid;
+            licenseData = _licenseData;
         }
     }
 }

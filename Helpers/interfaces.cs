@@ -15,7 +15,8 @@ namespace Helpers
         bool logon(string sDomain, string sUser, string sPassword, bool bProxy);
         void start();        
         void getMailsAsync();
-        utils.userData UserData { get; set; }
+        utils.UserData _userData { get; set; }
+
     }
 
     /// <summary>

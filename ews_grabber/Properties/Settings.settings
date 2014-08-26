@@ -1,7 +1,27 @@
 ﻿<?xml version='1.0' encoding='utf-8'?>
-<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)">
-  <Profiles>
-    <Profile Name="(Default)" />
-  </Profiles>
-  <Settings />
+<SettingsFile xmlns="http://schemas.microsoft.com/VisualStudio/2004/01/settings" CurrentProfile="(Default)" GeneratedClassNamespace="ews_grabber.Properties" GeneratedClassName="Settings">
+  <Profiles />
+  <Settings>
+    <Setting Name="ExchangeServiceURL" Type="System.String" Scope="User">
+      <Value Profile="(Default)">https://az18-cas-01.global.ds.honeywell.com/EWS/Exchange.asmx</Value>
+    </Setting>
+    <Setting Name="ExchangeWebProxy" Type="System.String" Scope="User">
+      <Value Profile="(Default)">fr44proxy.honeywell.com</Value>
+    </Setting>
+    <Setting Name="EchangeWebProxyPort" Type="System.Int32" Scope="User">
+      <Value Profile="(Default)">8080</Value>
+    </Setting>
+    <Setting Name="ExchangeUsername" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="ExchangeDomainname" Type="System.String" Scope="User">
+      <Value Profile="(Default)" />
+    </Setting>
+    <Setting Name="SQLiteDataBaseFilename" Type="System.String" Scope="User">
+      <Value Profile="(Default)">licensedata.db</Value>
+    </Setting>
+    <Setting Name="UseWebProxy" Type="System.Boolean" Scope="User">
+      <Value Profile="(Default)">False</Value>
+    </Setting>
+  </Settings>
 </SettingsFile>

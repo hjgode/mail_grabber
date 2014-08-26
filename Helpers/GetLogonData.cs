@@ -11,8 +11,8 @@ namespace Helpers
 {
     public partial class GetLogonData : Form
     {
-        utils.userData _userData;
-        public GetLogonData(ref utils.userData data)
+        utils.UserData _userData;
+        public GetLogonData(ref utils.UserData data)
         {
             _userData = data;
             InitializeComponent();

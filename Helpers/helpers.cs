@@ -59,26 +59,39 @@ namespace utils
 
     }
 
-    public class userData
+    public class UserData
     {
         public string sDomain;
         public string sUser;
         public string sPassword;
         public bool bUseProxy = false;
+        public string WebProxy;
+        public int WebProxyPort;
 
-        public userData()
+        public UserData()
         {
             sDomain = "";
             sUser = "";
             sPassword = "";
             bUseProxy = false;
+            WebProxy = "";
+            WebProxyPort = 8080;
         }
-        public userData(string d, string u, string p, bool bProxy)
+        public UserData(string d, string u, string p, bool bProxy)
         {
             sDomain = d;
             sUser = u;
             sPassword = p;
             bUseProxy = bProxy;
+        }
+        public UserData(string d, string u, string p, bool bProxy, string sWebProxy, int iWebProxyPort)
+        {
+            sDomain = d;
+            sUser = u;
+            sPassword = p;
+            bUseProxy = bProxy;
+            WebProxy = sWebProxy;
+            WebProxyPort = iWebProxyPort;
         }
     }
 

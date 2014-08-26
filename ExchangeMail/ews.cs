@@ -21,42 +21,85 @@ namespace ExchangeMail
 
     public class ews : IMailHost
     {
-        Microsoft.Exchange.WebServices.Data.ExchangeService service = null;
+        Microsoft.Exchange.WebServices.Data.ExchangeService _service = null;
+        Helpers.LicenseMail _licenseMail = new Helpers.LicenseMail();
 
-        const string hsm_service_url = "https://az18-cas-01.global.ds.honeywell.com/EWS/Exchange.asmx";
+        string ExchangeWebServiceURL = "https://az18-cas-01.global.ds.honeywell.com/EWS/Exchange.asmx";
+        string _ExchangeWebServiceURL
+        {
+            get { return _ExchangeWebServiceURL; }
+        }
         static string serviceURL = "https://az18-cas-01.global.ds.honeywell.com/EWS/Exchange.asmx";
         // EMEA-CAS-01.global.ds.honeywell.com
-        const string webProxy = "fr44proxy.honeywell.com";
-        const int webProxyPort = 8080;
+        const string sMailHasAlreadyProcessed = "[processed]";
+        string webProxy = "fr44proxy.honeywell.com";
+        string _webProxy
+        {
+            get { return webProxy; }
+        }
+        int webProxyPort = 8080;
+        int _webProxyPort
+        {
+            get { return webProxyPort; }
+        }
+
+        string _Username
+        {
+            get;
+            set;
+        }
 
         Thread _thread;
         volatile bool _bRunThread = true;
 
         public bool _enableTrace = false;
 
-        bool bRunPullThread = true;
-        bool bHandleEvents = true;
+        bool _bRunPullThread = true;
+        bool _bHandleEvents = true;
 
-        public userData UserData { get; set; }
+        public UserData _userData { get; set; }
         
         /// <summary>
         /// initialize a new ExchangeWebService object
         /// </summary>
         public ews()
         {
-            
+        }
+        [Obsolete]
+        public ews(string sServiceURL, string sWebProxy, int iWebProxyPort, bool bUseProxy)
+        {
+            ExchangeWebServiceURL = sServiceURL;
+            _userData.WebProxy = sWebProxy;
+            _userData.WebProxyPort = iWebProxyPort;
+            _userData.bUseProxy = bUseProxy;
+        }
+        [Obsolete]
+        public ews(string sServiceURL, string sUsername, string sPassword, string sWebProxy, int iWebProxyPort)
+        {
+            ExchangeWebServiceURL = sServiceURL;
+            if (sWebProxy.Length > 0)
+            {
+                _userData.bUseProxy = true;
+                _userData.WebProxy = sWebProxy;
+                _userData.WebProxyPort = iWebProxyPort;
+            }
+            else{
+                _userData.bUseProxy = false;
+                _userData.WebProxy = "";
+                _userData.WebProxyPort = 8080;
+            }
         }
 
         public void start()
         {
-            if (service != null)
+            if (_service != null)
             {
                 OnStateChanged(new StatusEventArgs(StatusType.error, "Already connected"));
                 return;
             }
             try
             {
-                serviceURL = hsm_service_url;
+                serviceURL = ExchangeWebServiceURL;
                 // Hook up the cert callback.
                 System.Net.ServicePointManager.ServerCertificateValidationCallback =
                     delegate(
@@ -73,14 +116,14 @@ namespace ExchangeMail
                         return true;
                     };
 
-                service = new ExchangeService(Microsoft.Exchange.WebServices.Data.ExchangeVersion.Exchange2010_SP2);
+                _service = new ExchangeService(Microsoft.Exchange.WebServices.Data.ExchangeVersion.Exchange2010_SP2);
 
                 if (_enableTrace)
                 {
-                    service.TraceListener = new TraceListener();// ITraceListenerInstance;
+                    _service.TraceListener = new TraceListener();// ITraceListenerInstance;
                     // Optional flags to indicate the requests and responses to trace.
-                    service.TraceFlags = TraceFlags.EwsRequest | TraceFlags.EwsResponse;
-                    service.TraceEnabled = true;
+                    _service.TraceFlags = TraceFlags.EwsRequest | TraceFlags.EwsResponse;
+                    _service.TraceEnabled = true;
                 }
             }
             catch (Exception ex)
@@ -90,6 +133,17 @@ namespace ExchangeMail
 
         }
 
+        public bool logon(string sDomain, string sUser, string sPassword, bool bProxy)
+        {
+            _userData.bUseProxy = bProxy;
+            _userData.sDomain = sDomain;
+            _userData.sUser = sUser;
+            _userData.sPassword = sPassword;
+            _userData.WebProxy = webProxy;
+            _userData.WebProxyPort = webProxyPort;
+            return logon(_userData.sDomain, _userData.sUser, _userData.sPassword, _userData.bUseProxy, _userData.WebProxy, _userData.WebProxyPort);
+        }
+
         /// <summary>
         /// logon using domain, user and password
         /// </summary>
@@ -97,22 +151,21 @@ namespace ExchangeMail
         /// <param name="sUser">user name</param>
         /// <param name="sPassword">password</param>
         /// <returns>true if success</returns>
-
-        public bool logon(string sDomain, string sUser, string sPassword, bool bProxy)
+        public bool logon(string sDomain, string sUser, string sPassword, bool bProxy, string sWebProxy, int iWebProxyPort)
         {
             OnStateChanged(new StatusEventArgs(StatusType.busy, "logon..."));
             bool bRet = false;
-            UserData = new userData(sDomain, sUser, sPassword, bProxy);
+            _userData = new UserData(sDomain, sUser, sPassword, bProxy, sWebProxy, iWebProxyPort);
             try
             {
                 // Or use NetworkCredential directly (WebCredentials is a wrapper
                 // around NetworkCredential).
-                service.Credentials = new NetworkCredential(sUser, sPassword, sDomain);
-                if(UserData.bUseProxy)
-                    service.WebProxy = new WebProxy(webProxy, webProxyPort);
-                service.Url = new Uri(hsm_service_url);
-                helpers.addLog("connected to: " + service.Url.ToString());
-                OnStateChanged(new StatusEventArgs(StatusType.idle, "connected to: " + service.Url.ToString()));
+                _service.Credentials = new NetworkCredential(sUser, sPassword, sDomain);
+                if(_userData.bUseProxy)
+                    _service.WebProxy = new WebProxy(_userData.WebProxy, _userData.WebProxyPort);
+                _service.Url = new Uri(ExchangeWebServiceURL);
+                helpers.addLog("connected to: " + _service.Url.ToString());
+                OnStateChanged(new StatusEventArgs(StatusType.idle, "connected to: " + _service.Url.ToString()));
 
                 bRet = true;
             }
@@ -133,7 +186,7 @@ namespace ExchangeMail
         {
             // Validate the URL and return true to allow the redirection or false to prevent it.
             helpers.addLog("Autodiscovery changed to " + url);
-            serviceURL = url;
+            serviceURL = url; //temporary store the new service URL
             OnStateChanged(new StatusEventArgs(StatusType.url_changed, "new URL = " + url));
             return true;
         }
@@ -149,7 +202,7 @@ namespace ExchangeMail
                     _thread.Abort();
             }
 
-            bRunPullThread = false;
+            _bRunPullThread = false;
             if (_pullMails != null)
             {
                 bool b = _pullMails.Join(1000);
@@ -164,7 +217,7 @@ namespace ExchangeMail
         public event Helpers.StateChangedEventHandler StateChanged;
         protected virtual void OnStateChanged(StatusEventArgs args)
         {
-            if (!bHandleEvents)
+            if (!_bHandleEvents)
                 return;
             System.Diagnostics.Debug.WriteLine("onStateChanged: " + args.eStatus.ToString() + ":" + args.strMessage);
             StateChangedEventHandler handler = StateChanged;
@@ -215,13 +268,15 @@ namespace ExchangeMail
                 do
                 {
                     //findResults = service.FindItems(WellKnownFolderName.Inbox, view);
-                    findResults = _ews.service.FindItems(
-                        WellKnownFolderName.Inbox,
-                        new SearchFilter.SearchFilterCollection(
-                            LogicalOperator.And,
-                            new SearchFilter.ContainsSubstring(ItemSchema.Subject, helpers.filterSubject),
-                            new SearchFilter.ContainsSubstring(ItemSchema.Attachments, helpers.filterAttachement)),
-                            view);
+                    SearchFilter.SearchFilterCollection filterCollection = new SearchFilter.SearchFilterCollection(LogicalOperator.And);
+#if !DEBUG
+                    filterCollection.Add(new SearchFilter.Not(new SearchFilter.ContainsSubstring(ItemSchema.Subject, sMailHasAlreadyProcessed)));
+#endif
+                    filterCollection.Add(new SearchFilter.ContainsSubstring(ItemSchema.Subject, helpers.filterSubject));
+                    filterCollection.Add(new SearchFilter.ContainsSubstring(ItemSchema.Attachments, helpers.filterAttachement));
+                    findResults = _ews._service.FindItems(WellKnownFolderName.Inbox, filterCollection, view);
+
+                    _ews.OnStateChanged(new StatusEventArgs(StatusType.other_mail, "found "+ findResults.Items.Count + " items in inbox"));
                     foreach (Item item in findResults.Items)
                     {
                         helpers.addLog("found item...");
@@ -235,11 +290,22 @@ namespace ExchangeMail
                             // If the item is an e-mail message, write the sender's name.
                             helpers.addLog(mailmessage.Sender.Name + ": " + mailmessage.Subject);
 
-                            MailMsg myMailMsg = new MailMsg(mailmessage, _ews.UserData.sUser);
+                            MailMsg myMailMsg = new MailMsg(mailmessage, _ews._userData.sUser);
 
                             // Bind to an existing message using its unique identifier.
                             //EmailMessage message = EmailMessage.Bind(service, new ItemId(item.Id.UniqueId));
-                            _ews.OnStateChanged(new StatusEventArgs(StatusType.license_mail, myMailMsg));
+                            _ews._licenseMail.processMail(myMailMsg);
+
+                            //change subject?
+                            // Bind to the existing item, using the ItemId. This method call results in a GetItem call to EWS.
+                            Item myItem = Item.Bind(_ews._service, item.Id as ItemId);
+                            myItem.Load();
+                            // Update the Subject of the email.
+                            myItem.Subject += "[processed]";
+                            // Save the updated email. This method call results in an UpdateItem call to EWS.
+                            myItem.Update(ConflictResolutionMode.AlwaysOverwrite);
+
+                            _ews.OnStateChanged(new StatusEventArgs(StatusType.license_mail, "processMail"));
                         }
                     }
                     view.Offset += chunkSize;
@@ -351,7 +417,7 @@ namespace ExchangeMail
         Thread _pullMails = null;
         void startPull()
         {
-            bRunPullThread = true;
+            _bRunPullThread = true;
             _pullMails = new Thread(startPullNotification);
             _pullMails.Name = "Pull thread";
             _pullMails.Start(this);
@@ -374,7 +440,7 @@ namespace ExchangeMail
             PullSubscription subscription=null;
             try
             {
-                subscription = _ews.service.SubscribeToPullNotifications(new FolderId[] { WellKnownFolderName.Inbox },
+                subscription = _ews._service.SubscribeToPullNotifications(new FolderId[] { WellKnownFolderName.Inbox },
                 iTimeoutMinutes /* timeOut: the subscription will end if the server is not polled within 5 minutes. */,
                 null /* watermark: null to start a new subscription. */,
                 EventType.NewMail);//, EventType.Created, EventType.Deleted);
@@ -387,7 +453,7 @@ namespace ExchangeMail
                 return;
             try
             {
-                while (_ews.bRunPullThread)
+                while (_ews._bRunPullThread)
                 {
                     Thread.Sleep((iTimeoutMinutes - 1) * 60000);
                     // Wait a couple minutes, then poll the server for new events.   
@@ -399,11 +465,14 @@ namespace ExchangeMail
                         switch (itemEvent.EventType)
                         {
                             case EventType.NewMail:
+                                utils.helpers.addLog("PullNotification: " + "EventType.NewMail");
                                 // A new mail has been received. Bind to it
-                                EmailMessage message = EmailMessage.Bind(_ews.service, itemEvent.ItemId);
+                                EmailMessage message = EmailMessage.Bind(_ews._service, itemEvent.ItemId);
                                 bool bDoProcessMail=false;
-                                if(message.Subject.Contains(helpers.filterSubject)){
+                                if (message.Subject.Contains(helpers.filterSubject) && (!message.Subject.Contains("[processed]")))
+                                {
                                     if(message.HasAttachments){
+                                        //check for endings of attachements
                                         foreach (Attachment att in message.Attachments)
                                         {
                                             if (att.Name.EndsWith(helpers.filterAttachement))
@@ -416,8 +485,19 @@ namespace ExchangeMail
                                     if (bDoProcessMail)
                                     {
                                         //create a new IMailMessage from the EmailMessage
-                                        MailMsg myMailMsg = new MailMsg(message, _ews.UserData.sUser);
-                                        _ews.OnStateChanged(new StatusEventArgs(StatusType.license_mail, myMailMsg));
+                                        MailMsg myMailMsg = new MailMsg(message, _ews._userData.sUser);
+                                        _ews._licenseMail.processMail(myMailMsg);
+                                        
+                                        //change subject?
+                                        // Bind to the existing item, using the ItemId. This method call results in a GetItem call to EWS.
+                                        Item myItem = Item.Bind(_ews._service, itemEvent.ItemId);
+                                        myItem.Load();
+                                        // Update the Subject of the email.
+                                        myItem.Subject += "[processed]";
+                                        // Save the updated email. This method call results in an UpdateItem call to EWS.
+                                        myItem.Update(ConflictResolutionMode.AlwaysOverwrite);
+                                        
+                                        _ews.OnStateChanged(new StatusEventArgs(StatusType.license_mail, "processMail2"));
                                     }
                                     else
                                         _ews.OnStateChanged(new StatusEventArgs(StatusType.other_mail, "mismatched mail received"));
@@ -425,11 +505,15 @@ namespace ExchangeMail
                                 break;
                             case EventType.Created:
                                 // An item was created in the folder. Bind to it.
-                                Item item = Item.Bind(_ews.service, itemEvent.ItemId);
+                                Item item = Item.Bind(_ews._service, itemEvent.ItemId);
+                                utils.helpers.addLog("PullNotification: " + "EventType.Created " + item.ToString());
                                 break;
                             case EventType.Deleted:
                                 // An item has been deleted. Output its ID to the console.
-                                Console.WriteLine("Item deleted: " + itemEvent.ItemId.UniqueId);
+                                utils.helpers.addLog("Item deleted: " + itemEvent.ItemId.UniqueId);
+                                break;
+                            default:
+                                utils.helpers.addLog("PullNotification: " + itemEvent.EventType.ToString());
                                 break;
                         }
                     }
@@ -441,11 +525,14 @@ namespace ExchangeMail
                         {
                             case EventType.Created:
                                 // An folder was created. Bind to it.
-                                Folder folder = Folder.Bind(_ews.service, folderEvent.FolderId);
+                                Folder folder = Folder.Bind(_ews._service, folderEvent.FolderId);
                                 break;
                             case EventType.Deleted:
                                 // A folder has been deleted. Output its Id to the console.
-                                Console.WriteLine("Folder deleted:" + folderEvent.FolderId.UniqueId);
+                                utils.helpers.addLog("Folder deleted:" + folderEvent.FolderId.UniqueId);
+                                break;
+                            default:
+                                utils.helpers.addLog("PullNotification: " + folderEvent.EventType.ToString());
                                 break;
                         }
                     }
@@ -479,12 +566,12 @@ namespace ExchangeMail
             catch (ThreadAbortException)
             {
                 _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "Pull Thread ThreadAbortException"));
-                _ews.bRunPullThread = false;
+                _ews._bRunPullThread = false;
             }
             catch (Exception ex)
             {
                 _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "Pull Thread Exception:" + ex.Message));
-                _ews.bRunPullThread = false;
+                _ews._bRunPullThread = false;
             }
             subscription.Unsubscribe();
             subscription = null;

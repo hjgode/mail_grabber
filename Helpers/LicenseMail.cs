@@ -7,10 +7,14 @@ using System.Text.RegularExpressions;
 
 namespace Helpers
 {
-
+    /// <summary>
+    /// this class processes LicenseMails
+    /// the license data must be processed i the StateChanged event handler in a subscriber
+    /// 
+    /// </summary>
     public class LicenseMail:IDisposable
     {
-        static LicenseDataBase _licenseDataBase;
+//        static LicenseDataBase _licenseDataBase;
 
         public string ReceivedBy;
         public DateTime SendAt;
@@ -48,8 +52,6 @@ namespace Helpers
 
         public void Dispose()
         {
-            if (_licenseDataBase != null)
-                _licenseDataBase.Dispose();
         }
 
         //we need to parse the body for "Order number:", "Order Date" ...
@@ -66,7 +68,7 @@ namespace Helpers
         //Qty Shipped To Date.......: 28
 
         //Qty Shipped in this email.: 28
-        public class licenseMailBodyData
+        public class LicenseMailBodyData
         {
             public string OrderNumber;
             public DateTime OrderDate;
@@ -75,7 +77,7 @@ namespace Helpers
             public string Product;
             public int Quantity;
 
-            public licenseMailBodyData()
+            public LicenseMailBodyData()
             {
             }
             public string dump()
@@ -89,9 +91,9 @@ namespace Helpers
                 sb.Append("Quantity: " + this.Quantity.ToString() + "\r\n");
                 return sb.ToString();
             }
-            public static licenseMailBodyData get(IMailMessage msg)
+            public static LicenseMailBodyData get(IMailMessage msg)
             {
-                licenseMailBodyData data = new licenseMailBodyData();
+                LicenseMailBodyData data = new LicenseMailBodyData();
                 string sBody = msg.Body;
                 sBody = sBody.Replace("\r\n", ";");
                 var expression = new Regex(
@@ -138,13 +140,19 @@ namespace Helpers
                 return dt;
             }
         }
-        public static licenseMailBodyData processMailBody(IMailMessage msg)
+        public static LicenseMailBodyData processMailBody(IMailMessage msg)
         {
-            licenseMailBodyData bodyData = licenseMailBodyData.get(msg);
+            LicenseMailBodyData bodyData = LicenseMailBodyData.get(msg);
             return bodyData;
         }
 
-        public int processMail(IMailMessage m, ref LicenseDataBase _licenseData)// (Microsoft.Exchange.WebServices.Data.EmailMessage m)
+        /// <summary>
+        /// process an email and call processAttachement for every attachement
+        /// which fires an event for every new attachement
+        /// </summary>
+        /// <param name="m"></param>
+        /// <returns></returns>
+        public int processMail(IMailMessage m)// (Microsoft.Exchange.WebServices.Data.EmailMessage m)
         {
 
             int iRet = 0;
@@ -153,8 +161,6 @@ namespace Helpers
                 utils.helpers.addLog("processMail: null msg");
                 return iRet;
             }
-            if (_licenseDataBase == null)
-                _licenseDataBase = _licenseData;
 
             try
             {
@@ -164,7 +170,7 @@ namespace Helpers
                 DateTime dtSendAt = m.timestamp;
                 
                 //get data from body
-                licenseMailBodyData bodyData = new licenseMailBodyData();
+                LicenseMailBodyData bodyData = new LicenseMailBodyData();
                 bodyData = processMailBody(m);
                 utils.helpers.addLog( bodyData.dump() );
 
@@ -196,20 +202,20 @@ namespace Helpers
         }
 
 
-        public int processAttachement(Attachement att, licenseMailBodyData data, IMailMessage mail)
+        public int processAttachement(Attachement att, LicenseMailBodyData data, IMailMessage mail)
         {
             int iCount=0;
             LicenseXML xmlData = LicenseXML.Deserialize(att.data);
-            if (_licenseDataBase == null)
-                System.Diagnostics.Debugger.Break();
 
             foreach(license ldata in xmlData.licenses){
-                utils.helpers.addLog("start _licenseDataBase.add() ...\r\n");
+                utils.helpers.addLog("processAttachement...\r\n");
                 LicenseData licenseData = new LicenseData(ldata.id, ldata.user, ldata.key, data.OrderNumber, data.OrderDate, data.yourPOnumber, data.EndCustomer, data.Product, data.Quantity, mail.User, mail.timestamp);
                 //if (_licenseDataBase.addQueued(licenseData))
-                if (_licenseDataBase.add(ldata.id, ldata.user, ldata.key, data.OrderNumber, data.OrderDate, data.yourPOnumber, data.EndCustomer, data.Product, data.Quantity, mail.User, mail.timestamp))
-                    iCount++;
-                utils.helpers.addLog("start _licenseDataBase.add() done\r\n");
+                OnStateChanged(new StatusEventArgs(StatusType.license_mail, licenseData));
+                iCount++;
+                //if (_licenseDataBase.add(ldata.id, ldata.user, ldata.key, data.OrderNumber, data.OrderDate, data.yourPOnumber, data.EndCustomer, data.Product, data.Quantity, mail.User, mail.timestamp))
+                //    iCount++;
+                //utils.helpers.addLog("start _licenseDataBase.add() done\r\n");
                
             }
                     #region alternative_code
@@ -261,5 +267,16 @@ namespace Helpers
             return iCount;
         }
 
+        public event Helpers.StateChangedEventHandler StateChanged;
+        protected virtual void OnStateChanged(StatusEventArgs args)
+        {
+
+            System.Diagnostics.Debug.WriteLine("LicensMail onStateChanged: " + args.eStatus.ToString() + ":" + args.strMessage);
+            StateChangedEventHandler handler = StateChanged;
+            if (handler != null)
+            {
+                handler(this, args);
+            }
+        }
     }
 }

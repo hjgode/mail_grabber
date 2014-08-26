@@ -16,22 +16,111 @@ namespace ews_grabber
     public partial class Form1 : Form
     {
         ews _ews;
-        utils.userData _userData;
+        utils.UserData _userData;
         //data and database
         LicenseDataBase _licenseDataBase;
         LicenseMail _licenseMail = new LicenseMail();
+        bool _bFilterActive = false;
 
         public Form1()
         {
             InitializeComponent();
             string appPath = utils.helpers.getAppPath();
+
+            _licenseMail = new LicenseMail();
+            //subscribe to new license mails
+            _licenseMail.StateChanged += new StateChangedEventHandler(on_new_licensemail);
+
             addLog("Please select Exchange-Connect to start test");
-            _licenseDataBase = new LicenseDataBase(ref this.dataGridView1);
-            loadData();
+            string dbFile = ews_grabber.Properties.Settings.Default.SQLiteDataBaseFilename;
+            if (!dbFile.Contains('\\'))
+            {  //build full file name
+                dbFile = utils.helpers.getAppPath() + dbFile;
+            }
+            _licenseDataBase = new LicenseDataBase(ref this.dataGridView1, dbFile);
+            if (_licenseDataBase.bIsValidDB == false)
+            {
+                MessageBox.Show("Error accessing or creating database file: " + dbFile, "Fatal ERROR");
+                Application.Exit();
+            }
+            else
+                loadData();
         }
 
-        List<Microsoft.Exchange.WebServices.Data.EmailMessage> mailList = new List<Microsoft.Exchange.WebServices.Data.EmailMessage>();
+        public bool addDataToGrid(
+            int id,
+            string deviceid,
+            string customer,
+            string key,
+            string ordernumber,
+            DateTime orderdate,
+            string ponumber,
+            string endcustomer,
+            string product,
+            int quantity,
+            string receivedby,
+            DateTime sendat)
+        {
+            bool bRet = true;
+            if (_bFilterActive)
+                lblStatus.Text = "use manual refresh";
+            else
+                doRefresh();
+            //dataGridView1.ResetBindings();
+            //dataGridView1.DataSource = _licenseDataBase.getDataset();
 
+            //dataGridView1.DataSource = _licenseDataBase.getDataset();
+            //return bRet;
+            //if (dataGridView1.DataSource != null)
+            //{
+            //    BindingSource bs = dataGridView1.DataSource as BindingSource;
+            //    if (bs != null)
+            //    {
+            //        DataTable dt = bs.DataSource as DataTable;
+            //        DataRow dr = dt.NewRow();
+            //        dr["id"] = id;
+            //        dr["deviceid"] = deviceid;//id     0
+            //        dr["customer"] = customer;//user   1
+            //        dr["key"] = key;     //       2
+            //        dr["ordernumber"] = ordernumber; //   3
+            //        dr["orderdate"] = orderdate;   //   4
+            //        dr["ponumber"] = ponumber; //      5
+            //        dr["endcustomer"] = endcustomer;//    6
+            //        dr["product"] = product; //       7
+            //        dr["quantity"] = quantity; //      8
+            //        dr["receivedby"] = receivedby; //    9
+            //        dr["sendat"] = sendat; //         10
+            //        dr.AcceptChanges();
+            //        dt.AcceptChanges();
+            //        dataGridView1.Update();
+            //    }
+            //    else
+                    //dataGridView1.Rows.Add(id, deviceid, customer, key, ordernumber, orderdate, ponumber, endcustomer, product, quantity, receivedby, sendat);
+            //}
+
+            //DataGridViewRow dgv = (DataGridViewRow)dataGridView1.Rows[0].Clone();
+            return bRet;
+        }
+        /// <summary>
+        /// called when a new license has been received
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
+        void on_new_licensemail(object sender, StatusEventArgs args)
+        {
+            LicenseData data=args.licenseData;
+            //add data and refresh datagrid
+            int InsertedID = _licenseDataBase.add(data._deviceid, data._customer, data._key, data._ordernumber, data._orderdate, data._ponumber, data._endcustomer, data._product, data._quantity, data._receivedby, data._sendat);
+            //add data to datagrid
+            //if (InsertedID!=-1)
+            //    addDataToGrid(InsertedID, data._deviceid, data._customer, data._key, data._ordernumber, data._orderdate, data._ponumber, data._endcustomer, data._product, data._quantity, data._receivedby, data._sendat);
+        }
+
+        /// <summary>
+        /// called for informational purposes by the Exchange Web Service class
+        /// </summary>
+        /// <param name="sender"></param>
+        /// <param name="args"></param>
         void _ews_stateChanged1(object sender, StatusEventArgs args)
         {
             Cursor.Current = Cursors.Default;
@@ -62,11 +151,10 @@ namespace ews_grabber
                     if(args.strMessage!=null)
                         addLog("license_mail: " + args.strMessage);
                     else
-                        addLog("license_mail: " + args.mailmsg.Subject);
-                    if (args.mailmsg != null)
+                        addLog("license_mail: " + args.licenseData._deviceid);
+                    if (args.licenseData != null)
                     {
-                        if (_licenseMail.processMail(args.mailmsg, ref _licenseDataBase) > 0)
-                            dataGridView1.Refresh();
+                        //add data to datagrid
                     }
                     break;
                 case StatusType.bulk_mail:
@@ -114,14 +202,23 @@ namespace ews_grabber
 
         private void mnuConnect_Click(object sender, EventArgs e)
         {
-            _userData = new utils.userData("Global", "E841719", "", false);
+            _userData = new utils.UserData("Global", "E841719", "", false);
             Helpers.GetLogonData dlg = new Helpers.GetLogonData(ref _userData);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
+                //store settings for later use
+                ews_grabber.Properties.Settings.Default.UseWebProxy = _userData.bUseProxy;
+                ews_grabber.Properties.Settings.Default.ExchangeDomainname = _userData.sDomain;
+                ews_grabber.Properties.Settings.Default.ExchangeUsername = _userData.sUser;
+                ews_grabber.Properties.Settings.Default.Save();
+
                 _ews = new ews();
                 _ews.StateChanged += new StateChangedEventHandler(_ews_stateChanged1);
                 _ews.start();
-                if (_ews.logon(_userData.sDomain, _userData.sUser, _userData.sPassword, _userData.bUseProxy))
+                if (_ews.logon(_userData.sDomain, _userData.sUser, _userData.sPassword,
+                    ews_grabber.Properties.Settings.Default.UseWebProxy, 
+                    ews_grabber.Properties.Settings.Default.ExchangeWebProxy, 
+                    ews_grabber.Properties.Settings.Default.EchangeWebProxyPort))
                 {// "Global", "E841719", ""))
                     Cursor.Current = Cursors.WaitCursor;
                     Application.DoEvents();
@@ -190,17 +287,29 @@ namespace ews_grabber
             this.Cursor = Cursors.WaitCursor;
             this.Enabled = false;
             Application.DoEvents();
-            int i = _licenseMail.processMail(msg, ref _licenseDataBase);
+            int i = _licenseMail.processMail(msg);
             this.Enabled = true; 
             this.Cursor = Cursors.Default;
             Application.DoEvents();
             
-            lblStatus.Text = "Updated data. Use refresh";
+            //lblStatus.Text = "Updated data. Use refresh";
+            doRefresh();
         }
 
         void doRefresh()
         {
+            DataGridView dgv = dataGridView1;
+            int iRow = 0, iCol = 0;
+            if (dgv.Rows.Count > 0)
+            {
+                iRow = dgv.CurrentCell.RowIndex;
+                iCol = dgv.CurrentCell.ColumnIndex;
+            } 
             dataGridView1.DataSource = _licenseDataBase.getDataset();
+            if (dgv.Rows.Count > 0)
+            {
+                dgv.CurrentCell = dgv.Rows[iRow].Cells[iCol];
+            }
         }
 
         void loadData()
@@ -211,6 +320,7 @@ namespace ews_grabber
         private void mnuClearData_Click(object sender, EventArgs e)
         {
             _licenseDataBase.clearData();
+            doRefresh();
         }
 
         private void mnuRefresh_Click(object sender, EventArgs e)
@@ -221,6 +331,10 @@ namespace ews_grabber
         private void btnSearch_Click(object sender, EventArgs e)
         {
             _licenseDataBase.filterData(ref this.dataGridView1, _filterType, txtFilter.Text);
+            if (_filterType != LicenseDataBase.FilterType.none || txtFilter.Text.Length == 0)
+                _bFilterActive = true;
+            else
+                _bFilterActive = false;
         }
 
         LicenseDataBase.FilterType _filterType
@@ -285,6 +399,12 @@ namespace ews_grabber
                     MessageBox.Show("license(s) saved to " + sFileName);
                 }
             }
+        }
+
+        private void mnuSettings_Click(object sender, EventArgs e)
+        {
+            SettingsForm dlg = new SettingsForm();
+            dlg.ShowDialog();
         }
     }
 }
