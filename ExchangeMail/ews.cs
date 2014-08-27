@@ -22,7 +22,7 @@ namespace ExchangeMail
     public class ews : IMailHost
     {
         Microsoft.Exchange.WebServices.Data.ExchangeService _service = null;
-        Helpers.LicenseMail _licenseMail = new Helpers.LicenseMail();
+        Helpers.LicenseMail _licenseMail=null;
 
         string ExchangeWebServiceURL = "https://az18-cas-01.global.ds.honeywell.com/EWS/Exchange.asmx";
         string _ExchangeWebServiceURL
@@ -62,8 +62,9 @@ namespace ExchangeMail
         /// <summary>
         /// initialize a new ExchangeWebService object
         /// </summary>
-        public ews()
+        public ews(ref LicenseMail lm)
         {
+            _licenseMail = lm;
         }
         [Obsolete]
         public ews(string sServiceURL, string sWebProxy, int iWebProxyPort, bool bUseProxy)
@@ -111,9 +112,56 @@ namespace ExchangeMail
                         // Validate the certificate and return true or false as appropriate.
                         // Note that it not a good practice to always return true because not
                         // all certificates should be trusted.
-                        helpers.addLog("certificate validated");
-                        OnStateChanged(new StatusEventArgs(StatusType.validating));
-                        return true;
+                        
+                        // If the certificate is a valid, signed certificate, return true.
+                        if (errors == System.Net.Security.SslPolicyErrors.None)
+                        {
+                            OnStateChanged(new StatusEventArgs(StatusType.validating, "No error"));
+                            return true;
+                        }
+                        // If there are errors in the certificate chain, look at each error to determine the cause.
+                        if ((errors & System.Net.Security.SslPolicyErrors.RemoteCertificateChainErrors) != 0)
+                        {
+                            OnStateChanged(new StatusEventArgs(StatusType.validating, "validating certificate"));
+                            if (chain != null && chain.ChainStatus != null)
+                            {
+                                foreach (System.Security.Cryptography.X509Certificates.X509ChainStatus status in chain.ChainStatus)
+                                {
+                                    if ((certificate.Subject == certificate.Issuer) &&
+                                       (status.Status == System.Security.Cryptography.X509Certificates.X509ChainStatusFlags.UntrustedRoot))
+                                    {
+                                        // Self-signed certificates with an untrusted root are valid. 
+                                        continue;
+                                    }
+                                    else
+                                    {
+                                        if (status.Status != System.Security.Cryptography.X509Certificates.X509ChainStatusFlags.NoError)
+                                        {
+                                            // If there are any other errors in the certificate chain, the certificate is invalid,
+                                            // so the method returns false.
+                                            helpers.addLog("certificate not validated");
+                                            OnStateChanged(new StatusEventArgs(StatusType.validating, "certificate not validated"));
+                                            return false;
+                                        }
+                                    }
+                                }
+                            }
+
+                            // When processing reaches this line, the only errors in the certificate chain are 
+                            // untrusted root errors for self-signed certificates. These certificates are valid
+                            // for default Exchange server installations, so return true.
+                            helpers.addLog("certificate validated");
+                            OnStateChanged(new StatusEventArgs(StatusType.validating, "certificate validated"));
+                            return true;
+                        }
+                        else
+                        {
+                            // In all other cases, return false.
+                            helpers.addLog("certificate not validated");
+                            OnStateChanged(new StatusEventArgs(StatusType.validating, "certificate not validated"));
+                            return false;
+                        }
+                        
                     };
 
                 _service = new ExchangeService(Microsoft.Exchange.WebServices.Data.ExchangeVersion.Exchange2010_SP2);
@@ -166,6 +214,8 @@ namespace ExchangeMail
                 _service.Url = new Uri(ExchangeWebServiceURL);
                 helpers.addLog("connected to: " + _service.Url.ToString());
                 OnStateChanged(new StatusEventArgs(StatusType.idle, "connected to: " + _service.Url.ToString()));
+                
+                OnStateChanged(new StatusEventArgs(StatusType.ews_started, "ews started"));
 
                 bRet = true;
             }
@@ -173,6 +223,7 @@ namespace ExchangeMail
             {
                 helpers.addLog("Exception: " + ex.Message);
                 OnStateChanged(new StatusEventArgs(StatusType.error, "logon failed: " + ex.Message));
+                OnStateChanged(new StatusEventArgs(StatusType.ews_stopped, "ews logon failed"));
             }
             return bRet;
         }
@@ -209,7 +260,7 @@ namespace ExchangeMail
                 if (!b)
                     _pullMails.Abort();
             }
-
+            OnStateChanged(new StatusEventArgs(StatusType.ews_stopped, "ews ended"));
         }
 
         #region Threading_stuff
@@ -242,7 +293,7 @@ namespace ExchangeMail
             helpers.addLog("_getMails() started...");
             ews _ews = (ews)param;  //need an instance
             _ews.OnStateChanged(new StatusEventArgs(StatusType.busy, "_getMails() started..."));
-            const int chunkSize = 10;
+            const int chunkSize = 50;
             try
             {
                 //blocking call
@@ -269,14 +320,12 @@ namespace ExchangeMail
                 {
                     //findResults = service.FindItems(WellKnownFolderName.Inbox, view);
                     SearchFilter.SearchFilterCollection filterCollection = new SearchFilter.SearchFilterCollection(LogicalOperator.And);
-#if !DEBUG
                     filterCollection.Add(new SearchFilter.Not(new SearchFilter.ContainsSubstring(ItemSchema.Subject, sMailHasAlreadyProcessed)));
-#endif
                     filterCollection.Add(new SearchFilter.ContainsSubstring(ItemSchema.Subject, helpers.filterSubject));
                     filterCollection.Add(new SearchFilter.ContainsSubstring(ItemSchema.Attachments, helpers.filterAttachement));
                     findResults = _ews._service.FindItems(WellKnownFolderName.Inbox, filterCollection, view);
 
-                    _ews.OnStateChanged(new StatusEventArgs(StatusType.other_mail, "found "+ findResults.Items.Count + " items in inbox"));
+                    _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "getMail: found "+ findResults.Items.Count + " items in inbox"));
                     foreach (Item item in findResults.Items)
                     {
                         helpers.addLog("found item...");
@@ -289,6 +338,7 @@ namespace ExchangeMail
 
                             // If the item is an e-mail message, write the sender's name.
                             helpers.addLog(mailmessage.Sender.Name + ": " + mailmessage.Subject);
+                            _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "getMail: processing eMail " + mailmessage.Subject));
 
                             MailMsg myMailMsg = new MailMsg(mailmessage, _ews._userData.sUser);
 
@@ -427,12 +477,8 @@ namespace ExchangeMail
         static void startPullNotification(object param)
         {
             ews _ews = (ews)param;  //need an instance
-            _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "Pull started"));
-#if DEBUG
-            int iTimeoutMinutes = 2;
-#else
+            _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "Pullnotification: started"));
             int iTimeoutMinutes = 5;
-#endif
 
             // Subscribe to pull notifications in the Inbox folder, and get notified when
             // a new mail is received, when an item or folder is created, or when an item
@@ -447,18 +493,31 @@ namespace ExchangeMail
             }
             catch (Exception ex)
             {
-                _ews.StateChanged(null, new StatusEventArgs(StatusType.error, "PullSubscription FAILED: "+ex.Message));
+                _ews.OnStateChanged(new StatusEventArgs(StatusType.error, "Pullnotification: PullSubscription FAILED: " + ex.Message));
             }
             if (subscription == null)
+            {
+                _ews.OnStateChanged(new StatusEventArgs(StatusType.error, "Pullnotification: END with no subscription"));
                 return;
+            }
             try
             {
                 while (_ews._bRunPullThread)
                 {
-                    Thread.Sleep((iTimeoutMinutes - 1) * 60000);
-                    // Wait a couple minutes, then poll the server for new events.   
-                    GetEventsResults events = subscription.GetEvents();
+                    _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "Pull sleeping "+(iTimeoutMinutes - 1).ToString()+" minutes..."));
+                    int iCount=0;
+                    do
+                    {
+                        _ews.OnStateChanged(new StatusEventArgs(StatusType.ews_pulse, "ews lives"));
+                        iCount += 5000;
+                        Thread.Sleep(5000);
+                        //Thread.Sleep((iTimeoutMinutes - 1) * 60000);
+                    } while (iCount < 60000);//do not sleep longer than iTimeout or you loose the subscription
 
+                    // Wait a couple minutes, then poll the server for new events.   
+                    _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "Pull looking for new mails"));
+                    GetEventsResults events = subscription.GetEvents();
+                    _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "Pull processing"));
                     // Loop through all item-related events.
                     foreach (ItemEvent itemEvent in events.ItemEvents)
                     {
@@ -466,6 +525,7 @@ namespace ExchangeMail
                         {
                             case EventType.NewMail:
                                 utils.helpers.addLog("PullNotification: " + "EventType.NewMail");
+                                _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "check eMail ..."));
                                 // A new mail has been received. Bind to it
                                 EmailMessage message = EmailMessage.Bind(_ews._service, itemEvent.ItemId);
                                 bool bDoProcessMail=false;
@@ -484,6 +544,7 @@ namespace ExchangeMail
                                     }
                                     if (bDoProcessMail)
                                     {
+                                        _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "PullNotification: processMail"));
                                         //create a new IMailMessage from the EmailMessage
                                         MailMsg myMailMsg = new MailMsg(message, _ews._userData.sUser);
                                         _ews._licenseMail.processMail(myMailMsg);
@@ -497,10 +558,10 @@ namespace ExchangeMail
                                         // Save the updated email. This method call results in an UpdateItem call to EWS.
                                         myItem.Update(ConflictResolutionMode.AlwaysOverwrite);
                                         
-                                        _ews.OnStateChanged(new StatusEventArgs(StatusType.license_mail, "processMail2"));
+                                        _ews.OnStateChanged(new StatusEventArgs(StatusType.license_mail, "Pullnotification: email marked"));
                                     }
                                     else
-                                        _ews.OnStateChanged(new StatusEventArgs(StatusType.other_mail, "mismatched mail received"));
+                                        _ews.OnStateChanged(new StatusEventArgs(StatusType.other_mail, "PullNotification: mail does not match"));
                                 }
                                 break;
                             case EventType.Created:
@@ -529,7 +590,7 @@ namespace ExchangeMail
                                 break;
                             case EventType.Deleted:
                                 // A folder has been deleted. Output its Id to the console.
-                                utils.helpers.addLog("Folder deleted:" + folderEvent.FolderId.UniqueId);
+                                utils.helpers.addLog("PullNotification: " + folderEvent.FolderId.UniqueId);
                                 break;
                             default:
                                 utils.helpers.addLog("PullNotification: " + folderEvent.EventType.ToString());
@@ -565,17 +626,26 @@ namespace ExchangeMail
             }
             catch (ThreadAbortException)
             {
-                _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "Pull Thread ThreadAbortException"));
+                _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "PullNotification: ThreadAbortException"));
                 _ews._bRunPullThread = false;
             }
             catch (Exception ex)
             {
-                _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "Pull Thread Exception:" + ex.Message));
+                _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "PullNotification: Pull Thread Exception:" + ex.Message));
                 _ews._bRunPullThread = false;
             }
-            subscription.Unsubscribe();
+            try
+            {
+                subscription.Unsubscribe();
+            }
+            catch (Exception ex)
+            {
+                utils.helpers.addExceptionLog("subscriptions unsubscribe exception");
+                _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "PullNotification: subscriptions unsubscribe exception " + ex.Message));
+            }
             subscription = null;
-            _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "Pull ended"));
+            _ews.OnStateChanged(new StatusEventArgs(StatusType.ews_stopped, "ews pull ended"));
+            _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "PullNotification: Pull ended"));
         }
 
         class TraceListener : ITraceListener

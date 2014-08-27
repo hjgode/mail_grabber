@@ -28,11 +28,14 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuSettings = new System.Windows.Forms.ToolStripMenuItem();
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.exchangeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuConnect = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuDisconnect = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuRefresh = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuAdmin = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuTest_xml = new System.Windows.Forms.ToolStripMenuItem();
@@ -40,7 +43,6 @@
             this.mnuProcess_Mail = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuClearData = new System.Windows.Forms.ToolStripMenuItem();
             this.tabControl1 = new System.Windows.Forms.TabControl();
-            this.tabSearch = new System.Windows.Forms.TabPage();
             this.tabBrowse = new System.Windows.Forms.TabPage();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
             this.panel1 = new System.Windows.Forms.Panel();
@@ -54,16 +56,19 @@
             this.radioOrderNumber = new System.Windows.Forms.RadioButton();
             this.tabLog = new System.Windows.Forms.TabPage();
             this.textBox1 = new System.Windows.Forms.TextBox();
-            this.statusStrip1 = new System.Windows.Forms.StatusStrip();
-            this.lblStatus = new System.Windows.Forms.ToolStripStatusLabel();
-            this.mnuSettings = new System.Windows.Forms.ToolStripMenuItem();
+            this.lblLED = new System.Windows.Forms.Label();
+            this.lblStatus = new System.Windows.Forms.TextBox();
+            this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.dataPopup = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.mnuExport = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabBrowse.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
             this.panel1.SuspendLayout();
             this.tabLog.SuspendLayout();
-            this.statusStrip1.SuspendLayout();
+            this.tableLayoutPanel1.SuspendLayout();
+            this.dataPopup.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -88,17 +93,25 @@
             this.fileToolStripMenuItem.Size = new System.Drawing.Size(37, 20);
             this.fileToolStripMenuItem.Text = "File";
             // 
+            // mnuSettings
+            // 
+            this.mnuSettings.Name = "mnuSettings";
+            this.mnuSettings.Size = new System.Drawing.Size(116, 22);
+            this.mnuSettings.Text = "Settings";
+            this.mnuSettings.Click += new System.EventHandler(this.mnuSettings_Click);
+            // 
             // exitToolStripMenuItem
             // 
             this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(116, 22);
             this.exitToolStripMenuItem.Text = "Exit";
             this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // exchangeToolStripMenuItem
             // 
             this.exchangeToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mnuConnect});
+            this.mnuConnect,
+            this.mnuDisconnect});
             this.exchangeToolStripMenuItem.Name = "exchangeToolStripMenuItem";
             this.exchangeToolStripMenuItem.Size = new System.Drawing.Size(69, 20);
             this.exchangeToolStripMenuItem.Text = "Exchange";
@@ -106,9 +119,17 @@
             // mnuConnect
             // 
             this.mnuConnect.Name = "mnuConnect";
-            this.mnuConnect.Size = new System.Drawing.Size(119, 22);
+            this.mnuConnect.Size = new System.Drawing.Size(133, 22);
             this.mnuConnect.Text = "Connect";
             this.mnuConnect.Click += new System.EventHandler(this.mnuConnect_Click);
+            // 
+            // mnuDisconnect
+            // 
+            this.mnuDisconnect.Enabled = false;
+            this.mnuDisconnect.Name = "mnuDisconnect";
+            this.mnuDisconnect.Size = new System.Drawing.Size(133, 22);
+            this.mnuDisconnect.Text = "Disconnect";
+            this.mnuDisconnect.Click += new System.EventHandler(this.mnuDisconnect_Click);
             // 
             // mnuRefresh
             // 
@@ -158,25 +179,14 @@
             // 
             // tabControl1
             // 
-            this.tabControl1.Controls.Add(this.tabSearch);
             this.tabControl1.Controls.Add(this.tabBrowse);
             this.tabControl1.Controls.Add(this.tabLog);
             this.tabControl1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.tabControl1.Location = new System.Drawing.Point(0, 24);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(603, 413);
+            this.tabControl1.Size = new System.Drawing.Size(603, 435);
             this.tabControl1.TabIndex = 2;
-            // 
-            // tabSearch
-            // 
-            this.tabSearch.Location = new System.Drawing.Point(4, 22);
-            this.tabSearch.Name = "tabSearch";
-            this.tabSearch.Padding = new System.Windows.Forms.Padding(3);
-            this.tabSearch.Size = new System.Drawing.Size(595, 387);
-            this.tabSearch.TabIndex = 0;
-            this.tabSearch.Text = "Search";
-            this.tabSearch.UseVisualStyleBackColor = true;
             // 
             // tabBrowse
             // 
@@ -184,7 +194,7 @@
             this.tabBrowse.Controls.Add(this.panel1);
             this.tabBrowse.Location = new System.Drawing.Point(4, 22);
             this.tabBrowse.Name = "tabBrowse";
-            this.tabBrowse.Size = new System.Drawing.Size(595, 387);
+            this.tabBrowse.Size = new System.Drawing.Size(595, 409);
             this.tabBrowse.TabIndex = 2;
             this.tabBrowse.Text = "Browse";
             this.tabBrowse.UseVisualStyleBackColor = true;
@@ -195,12 +205,13 @@
             this.dataGridView1.AllowUserToDeleteRows = false;
             this.dataGridView1.AllowUserToOrderColumns = true;
             this.dataGridView1.ColumnHeadersHeightSizeMode = System.Windows.Forms.DataGridViewColumnHeadersHeightSizeMode.AutoSize;
+            this.dataGridView1.ContextMenuStrip = this.dataPopup;
             this.dataGridView1.Dock = System.Windows.Forms.DockStyle.Fill;
             this.dataGridView1.Location = new System.Drawing.Point(0, 67);
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.ReadOnly = true;
             this.dataGridView1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridView1.Size = new System.Drawing.Size(595, 320);
+            this.dataGridView1.Size = new System.Drawing.Size(595, 342);
             this.dataGridView1.TabIndex = 0;
             // 
             // panel1
@@ -306,7 +317,7 @@
             this.tabLog.Location = new System.Drawing.Point(4, 22);
             this.tabLog.Name = "tabLog";
             this.tabLog.Padding = new System.Windows.Forms.Padding(3);
-            this.tabLog.Size = new System.Drawing.Size(595, 387);
+            this.tabLog.Size = new System.Drawing.Size(595, 409);
             this.tabLog.TabIndex = 1;
             this.tabLog.Text = "Log";
             this.tabLog.UseVisualStyleBackColor = true;
@@ -319,41 +330,67 @@
             this.textBox1.Name = "textBox1";
             this.textBox1.ReadOnly = true;
             this.textBox1.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.textBox1.Size = new System.Drawing.Size(589, 381);
+            this.textBox1.Size = new System.Drawing.Size(589, 403);
             this.textBox1.TabIndex = 1;
             // 
-            // statusStrip1
+            // lblLED
             // 
-            this.statusStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.lblStatus});
-            this.statusStrip1.Location = new System.Drawing.Point(0, 437);
-            this.statusStrip1.Name = "statusStrip1";
-            this.statusStrip1.Size = new System.Drawing.Size(603, 22);
-            this.statusStrip1.TabIndex = 3;
-            this.statusStrip1.Text = "statusStrip1";
+            this.lblLED.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Left | System.Windows.Forms.AnchorStyles.Right)));
+            this.lblLED.AutoSize = true;
+            this.lblLED.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(255)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            this.lblLED.ForeColor = System.Drawing.Color.FromArgb(((int)(((byte)(128)))), ((int)(((byte)(255)))), ((int)(((byte)(128)))));
+            this.lblLED.Location = new System.Drawing.Point(3, 6);
+            this.lblLED.Name = "lblLED";
+            this.lblLED.Size = new System.Drawing.Size(15, 13);
+            this.lblLED.TabIndex = 4;
+            this.lblLED.Text = "O";
             // 
             // lblStatus
             // 
-            this.lblStatus.AutoSize = false;
+            this.lblStatus.Dock = System.Windows.Forms.DockStyle.Top;
+            this.lblStatus.Location = new System.Drawing.Point(24, 3);
             this.lblStatus.Name = "lblStatus";
-            this.lblStatus.Size = new System.Drawing.Size(200, 17);
-            this.lblStatus.Text = "idle";
+            this.lblStatus.ReadOnly = true;
+            this.lblStatus.Size = new System.Drawing.Size(576, 20);
+            this.lblStatus.TabIndex = 5;
             // 
-            // mnuSettings
+            // tableLayoutPanel1
             // 
-            this.mnuSettings.Name = "mnuSettings";
-            this.mnuSettings.Size = new System.Drawing.Size(152, 22);
-            this.mnuSettings.Text = "Settings";
-            this.mnuSettings.Click += new System.EventHandler(this.mnuSettings_Click);
+            this.tableLayoutPanel1.ColumnCount = 2;
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle());
+            this.tableLayoutPanel1.ColumnStyles.Add(new System.Windows.Forms.ColumnStyle(System.Windows.Forms.SizeType.Percent, 100F));
+            this.tableLayoutPanel1.Controls.Add(this.lblLED, 0, 0);
+            this.tableLayoutPanel1.Controls.Add(this.lblStatus, 1, 0);
+            this.tableLayoutPanel1.Dock = System.Windows.Forms.DockStyle.Bottom;
+            this.tableLayoutPanel1.Location = new System.Drawing.Point(0, 433);
+            this.tableLayoutPanel1.Name = "tableLayoutPanel1";
+            this.tableLayoutPanel1.RowCount = 1;
+            this.tableLayoutPanel1.RowStyles.Add(new System.Windows.Forms.RowStyle());
+            this.tableLayoutPanel1.Size = new System.Drawing.Size(603, 26);
+            this.tableLayoutPanel1.TabIndex = 6;
+            // 
+            // dataPopup
+            // 
+            this.dataPopup.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mnuExport});
+            this.dataPopup.Name = "dataPopup";
+            this.dataPopup.Size = new System.Drawing.Size(108, 26);
+            // 
+            // mnuExport
+            // 
+            this.mnuExport.Name = "mnuExport";
+            this.mnuExport.Size = new System.Drawing.Size(152, 22);
+            this.mnuExport.Text = "Export";
+            this.mnuExport.Click += new System.EventHandler(this.mnuExport_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(603, 459);
+            this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.menuStrip1);
-            this.Controls.Add(this.statusStrip1);
             this.MainMenuStrip = this.menuStrip1;
             this.MaximizeBox = false;
             this.Name = "Form1";
@@ -369,8 +406,9 @@
             this.panel1.PerformLayout();
             this.tabLog.ResumeLayout(false);
             this.tabLog.PerformLayout();
-            this.statusStrip1.ResumeLayout(false);
-            this.statusStrip1.PerformLayout();
+            this.tableLayoutPanel1.ResumeLayout(false);
+            this.tableLayoutPanel1.PerformLayout();
+            this.dataPopup.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -388,13 +426,10 @@
         private System.Windows.Forms.ToolStripMenuItem mnuTest_DB;
         private System.Windows.Forms.ToolStripMenuItem mnuProcess_Mail;
         private System.Windows.Forms.TabControl tabControl1;
-        private System.Windows.Forms.TabPage tabSearch;
         private System.Windows.Forms.TabPage tabBrowse;
         private System.Windows.Forms.DataGridView dataGridView1;
         private System.Windows.Forms.TabPage tabLog;
         private System.Windows.Forms.TextBox textBox1;
-        private System.Windows.Forms.StatusStrip statusStrip1;
-        private System.Windows.Forms.ToolStripStatusLabel lblStatus;
         private System.Windows.Forms.ToolStripMenuItem mnuClearData;
         private System.Windows.Forms.ToolStripMenuItem mnuRefresh;
         private System.Windows.Forms.Panel panel1;
@@ -407,6 +442,12 @@
         private System.Windows.Forms.RadioButton radioOrderNumber;
         private System.Windows.Forms.Button btnExport;
         private System.Windows.Forms.ToolStripMenuItem mnuSettings;
+        private System.Windows.Forms.ToolStripMenuItem mnuDisconnect;
+        private System.Windows.Forms.Label lblLED;
+        private System.Windows.Forms.TextBox lblStatus;
+        private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
+        private System.Windows.Forms.ContextMenuStrip dataPopup;
+        private System.Windows.Forms.ToolStripMenuItem mnuExport;
     }
 }
 

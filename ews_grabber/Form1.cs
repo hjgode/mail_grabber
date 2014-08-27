@@ -21,23 +21,31 @@ namespace ews_grabber
         LicenseDataBase _licenseDataBase;
         LicenseMail _licenseMail = new LicenseMail();
         bool _bFilterActive = false;
+        MySettings _mysettings = new MySettings();
 
         public Form1()
         {
             InitializeComponent();
+
+            //load settings
+            _mysettings = new MySettings();
+            _mysettings = _mysettings.load();
+
             string appPath = utils.helpers.getAppPath();
 
             _licenseMail = new LicenseMail();
             //subscribe to new license mails
-            _licenseMail.StateChanged += new StateChangedEventHandler(on_new_licensemail);
+            _licenseMail.StateChanged += on_new_licensemail;
 
             addLog("Please select Exchange-Connect to start test");
-            string dbFile = ews_grabber.Properties.Settings.Default.SQLiteDataBaseFilename;
+            string dbFile = _mysettings.SQLiteDataBaseFilename;
+
             if (!dbFile.Contains('\\'))
             {  //build full file name
                 dbFile = utils.helpers.getAppPath() + dbFile;
             }
             _licenseDataBase = new LicenseDataBase(ref this.dataGridView1, dbFile);
+            _licenseDataBase.StateChanged+=new StateChangedEventHandler(_licenseDataBase_StateChanged);
             if (_licenseDataBase.bIsValidDB == false)
             {
                 MessageBox.Show("Error accessing or creating database file: " + dbFile, "Fatal ERROR");
@@ -45,6 +53,7 @@ namespace ews_grabber
             }
             else
                 loadData();
+            
         }
 
         public bool addDataToGrid(
@@ -63,7 +72,7 @@ namespace ews_grabber
         {
             bool bRet = true;
             if (_bFilterActive)
-                lblStatus.Text = "use manual refresh";
+                setLblStatus("use manual refresh");
             else
                 doRefresh();
             //dataGridView1.ResetBindings();
@@ -108,14 +117,22 @@ namespace ews_grabber
         /// <param name="args"></param>
         void on_new_licensemail(object sender, StatusEventArgs args)
         {
+            utils.helpers.addLog("received new License Data\r\n");
             LicenseData data=args.licenseData;
             //add data and refresh datagrid
             int InsertedID = _licenseDataBase.add(data._deviceid, data._customer, data._key, data._ordernumber, data._orderdate, data._ponumber, data._endcustomer, data._product, data._quantity, data._receivedby, data._sendat);
             //add data to datagrid
             //if (InsertedID!=-1)
             //    addDataToGrid(InsertedID, data._deviceid, data._customer, data._key, data._ordernumber, data._orderdate, data._ponumber, data._endcustomer, data._product, data._quantity, data._receivedby, data._sendat);
+            setLblStatus("new data");
         }
 
+        void _licenseDataBase_StateChanged(object s, StatusEventArgs args)
+        {
+            _ews_stateChanged1(s, args);
+        }
+
+        static bool _bLEDToggle = false;
         /// <summary>
         /// called for informational purposes by the Exchange Web Service class
         /// </summary>
@@ -123,52 +140,113 @@ namespace ews_grabber
         /// <param name="args"></param>
         void _ews_stateChanged1(object sender, StatusEventArgs args)
         {
+            
             Cursor.Current = Cursors.Default;
             switch (args.eStatus)
             {
+                case StatusType.ews_pulse:
+                    if (_bLEDToggle)
+                        setLEDColor(Color.Green);
+                    else
+                        setLEDColor(Color.LightGreen);
+                    _bLEDToggle = !_bLEDToggle;
+                    break;
+                case StatusType.ews_started:
+                    lblLED.BackColor = Color.LightGreen;
+                    mnuDisconnect.Enabled = true;
+                    mnuConnect.Enabled = false;
+                    break;
+                case StatusType.ews_stopped:
+                    lblLED.BackColor = Color.Red;
+                    break;
                 case StatusType.success:
                     addLog("success " + args.strMessage);
+                    setLblStatus("success");
                     break;
                 case StatusType.validating:
                     addLog("validating " + args.strMessage);
+                    setLblStatus("validating");
                     break;
                 case StatusType.error:
                     addLog("got invalid results");
+                    if (args.strMessage != null)
+                        setLblStatus(args.strMessage);
+                    else
+                        setLblStatus("error");
                     break;
                 case StatusType.busy:
                     addLog("exchange is busy..." + args.strMessage);
+                    setLblStatus("busy");
                     break;
                 case StatusType.idle:
                     addLog("exchange idle...");
+                    setLblStatus("idle");
                     break;
                 case StatusType.url_changed:
                     addLog("url changed: " + args.strMessage);
+                    setLblStatus(args.strMessage);
                     break;
                 case StatusType.none:
                     addLog("wait..." + args.strMessage);
+                    setLblStatus(args.strMessage);
                     break;
                 case StatusType.license_mail:
-                    if(args.strMessage!=null)
+                    if (args.strMessage != null)
+                    {
                         addLog("license_mail: " + args.strMessage);
+                        setLblStatus(args.strMessage);
+                    }
                     else
                         addLog("license_mail: " + args.licenseData._deviceid);
                     if (args.licenseData != null)
                     {
                         //add data to datagrid
+                        setLblStatus(args.licenseData._deviceid);
                     }
-                    break;
-                case StatusType.bulk_mail:
-                    addLog("bulk_mail: " + args.strMessage);
-                    //a number of license data has been processed
-                    //do a refresh
-                    _licenseDataBase.doRefresh(ref this.dataGridView1);
                     break;
                 case StatusType.other_mail:
                     addLog("other_mail: " + args.strMessage);
+                    setLblStatus(args.strMessage);
                     break;
             }
         }
 
+        delegate void setLEDColorD(Color color);
+        void setLEDColor(Color color)
+        {
+            if (lblLED.InvokeRequired)
+            {
+                setLEDColorD d = new setLEDColorD(setLEDColor);
+                try
+                {
+                    this.Invoke(d, new object[] { color });
+                }
+                catch (Exception)
+                {}
+            }
+            else {
+                lblLED.ForeColor = color;
+            }
+        }
+
+        delegate void setLblStatusD(string s);
+        void setLblStatus(string s)
+        {
+            if (this.lblStatus.InvokeRequired)
+            {
+                setLblStatusD d = new setLblStatusD(setLblStatus);
+                try
+                {
+                    this.Invoke(d, new object[] { s });
+                }
+                catch (Exception)
+                { }
+            }
+            else
+            {
+                lblStatus.Text = s;
+            }
+        }
 
         delegate void SetTextCallback(string text);
         public void addLog(string text)
@@ -187,6 +265,8 @@ namespace ews_grabber
             }
             else
             {
+                if (textBox1.Text.Length > 30000)
+                    textBox1.Text = "";
                 textBox1.Text += text + "\r\n";
                 textBox1.SelectionLength = 0;
                 textBox1.SelectionStart = textBox1.Text.Length - 1;
@@ -202,30 +282,27 @@ namespace ews_grabber
 
         private void mnuConnect_Click(object sender, EventArgs e)
         {
-            _userData = new utils.UserData("Global", "E841719", "", false);
+            _mysettings = _mysettings.load();
+            _userData = new utils.UserData(_mysettings.ExchangeDomainname, _mysettings.ExchangeUsername, "", _mysettings.UseWebProxy);
             Helpers.GetLogonData dlg = new Helpers.GetLogonData(ref _userData);
             if (dlg.ShowDialog() == DialogResult.OK)
             {
-                //store settings for later use
-                ews_grabber.Properties.Settings.Default.UseWebProxy = _userData.bUseProxy;
-                ews_grabber.Properties.Settings.Default.ExchangeDomainname = _userData.sDomain;
-                ews_grabber.Properties.Settings.Default.ExchangeUsername = _userData.sUser;
-                ews_grabber.Properties.Settings.Default.Save();
-
-                _ews = new ews();
+                _ews = new ews(ref _licenseMail);
                 _ews.StateChanged += new StateChangedEventHandler(_ews_stateChanged1);
                 _ews.start();
+
                 if (_ews.logon(_userData.sDomain, _userData.sUser, _userData.sPassword,
-                    ews_grabber.Properties.Settings.Default.UseWebProxy, 
-                    ews_grabber.Properties.Settings.Default.ExchangeWebProxy, 
-                    ews_grabber.Properties.Settings.Default.EchangeWebProxyPort))
+                    _mysettings.UseWebProxy,
+                    _mysettings.ExchangeWebProxy,
+                    _mysettings.EchangeWebProxyPort))
                 {// "Global", "E841719", ""))
                     Cursor.Current = Cursors.WaitCursor;
                     Application.DoEvents();
                     _ews.getMailsAsync();
                 }
             }
-
+            mnuConnect.Enabled = false;
+            mnuDisconnect.Enabled = true;
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -292,7 +369,7 @@ namespace ews_grabber
             this.Cursor = Cursors.Default;
             Application.DoEvents();
             
-            //lblStatus.Text = "Updated data. Use refresh";
+            //setLblStatus("Updated data. Use refresh";
             doRefresh();
         }
 
@@ -405,6 +482,22 @@ namespace ews_grabber
         {
             SettingsForm dlg = new SettingsForm();
             dlg.ShowDialog();
+        }
+
+        private void mnuDisconnect_Click(object sender, EventArgs e)
+        {
+            if (_ews != null)
+            {
+                _ews.Dispose();
+                _ews = null;
+            }
+            mnuConnect.Enabled = true;
+            mnuDisconnect.Enabled = false;
+        }
+
+        private void mnuExport_Click(object sender, EventArgs e)
+        {
+            btnExport_Click(this, e);
         }
     }
 }

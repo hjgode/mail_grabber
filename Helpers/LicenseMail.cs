@@ -211,6 +211,7 @@ namespace Helpers
                 utils.helpers.addLog("processAttachement...\r\n");
                 LicenseData licenseData = new LicenseData(ldata.id, ldata.user, ldata.key, data.OrderNumber, data.OrderDate, data.yourPOnumber, data.EndCustomer, data.Product, data.Quantity, mail.User, mail.timestamp);
                 //if (_licenseDataBase.addQueued(licenseData))
+                utils.helpers.addLog("firing event\r\n");
                 OnStateChanged(new StatusEventArgs(StatusType.license_mail, licenseData));
                 iCount++;
                 //if (_licenseDataBase.add(ldata.id, ldata.user, ldata.key, data.OrderNumber, data.OrderDate, data.yourPOnumber, data.EndCustomer, data.Product, data.Quantity, mail.User, mail.timestamp))

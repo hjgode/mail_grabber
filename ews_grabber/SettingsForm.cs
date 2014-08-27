@@ -11,7 +11,7 @@ namespace ews_grabber
 {
     public partial class SettingsForm : Form
     {
-        
+        MySettings _mysettings = new MySettings();
         public SettingsForm()
         {
             InitializeComponent();
@@ -20,35 +20,34 @@ namespace ews_grabber
 
         void loadSettings()
         {
-            ews_grabber.Properties.Settings.Default.Upgrade();
-            ews_grabber.Properties.Settings.Default.Reload();
-            txtDomain.Text = ews_grabber.Properties.Settings.Default.ExchangeDomainname;
-            txtUser.Text = ews_grabber.Properties.Settings.Default.ExchangeUsername;
-            txtExchangeServiceURL.Text = ews_grabber.Properties.Settings.Default.ExchangeServiceURL;
-            chkUseWebProxy.Checked = ews_grabber.Properties.Settings.Default.UseWebProxy;
-            txtWebProxy.Text = ews_grabber.Properties.Settings.Default.ExchangeWebProxy;
-            numProxyPort.Value = ews_grabber.Properties.Settings.Default.EchangeWebProxyPort;
+            _mysettings = _mysettings.load();            
+            txtDomain.Text = _mysettings.ExchangeDomainname;
+            txtUser.Text = _mysettings.ExchangeUsername;
+            txtExchangeServiceURL.Text = _mysettings.ExchangeServiceURL;
+            chkUseWebProxy.Checked = _mysettings.UseWebProxy;
+            txtWebProxy.Text = _mysettings.ExchangeWebProxy;
+            numProxyPort.Value = _mysettings.EchangeWebProxyPort;
 
-            txtDatabaseFile.Text = ews_grabber.Properties.Settings.Default.SQLiteDataBaseFilename;
+            txtDatabaseFile.Text = _mysettings.SQLiteDataBaseFilename;
         }
 
         private void btnOK_Click(object sender, EventArgs e)
         {
-            ews_grabber.Properties.Settings.Default.ExchangeDomainname = txtDomain.Text;
-            ews_grabber.Properties.Settings.Default.ExchangeUsername = txtUser.Text;
-            ews_grabber.Properties.Settings.Default.ExchangeServiceURL = txtExchangeServiceURL.Text;
-            ews_grabber.Properties.Settings.Default.ExchangeWebProxy = txtWebProxy.Text;
-            ews_grabber.Properties.Settings.Default.EchangeWebProxyPort = (int)numProxyPort.Value;
-            ews_grabber.Properties.Settings.Default.UseWebProxy = chkUseWebProxy.Checked;
+            _mysettings.ExchangeDomainname = txtDomain.Text;
+            _mysettings.ExchangeUsername = txtUser.Text;
+            _mysettings.ExchangeServiceURL = txtExchangeServiceURL.Text;
+            _mysettings.ExchangeWebProxy = txtWebProxy.Text;
+            _mysettings.EchangeWebProxyPort = (int)numProxyPort.Value;
+            _mysettings.UseWebProxy = chkUseWebProxy.Checked;
 
-            string db_file = ews_grabber.Properties.Settings.Default.SQLiteDataBaseFilename;
-            if (db_file != txtDatabaseFile.Text)
+            string db_file = txtDatabaseFile.Text;
+            if (db_file != _mysettings.SQLiteDataBaseFilename)
             {
                 MessageBox.Show("Changing the db file needs a program restart!", "database file changed");
             }
-            ews_grabber.Properties.Settings.Default.SQLiteDataBaseFilename = txtDatabaseFile.Text;
+            _mysettings.SQLiteDataBaseFilename = db_file;
 
-            ews_grabber.Properties.Settings.Default.Save();
+            _mysettings.Save(_mysettings);
 
             this.DialogResult = DialogResult.OK;
             this.Close();
@@ -67,7 +66,7 @@ namespace ews_grabber
 
         private void btnGetFile_Click(object sender, EventArgs e)
         {
-            string db_file = ews_grabber.Properties.Settings.Default.SQLiteDataBaseFilename;
+            string db_file = _mysettings.SQLiteDataBaseFilename;
             OpenFileDialog ofd = new OpenFileDialog();
             ofd.CheckPathExists = true;
             ofd.DereferenceLinks = true;

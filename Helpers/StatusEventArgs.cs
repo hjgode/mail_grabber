@@ -16,7 +16,9 @@ namespace Helpers
         validating,
         license_mail,
         other_mail,
-        bulk_mail
+        ews_stopped,
+        ews_started,
+        ews_pulse
     }
 
     public class StatusEventArgs:EventArgs

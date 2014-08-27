@@ -37,20 +37,6 @@ namespace Helpers
     {
         bool bHandleEvents=true;
 
-        /// <summary>
-        /// object to sync access to the queue
-        /// </summary>
-        object lockQueue = new object();
-        /// <summary>
-        /// a queue to hold LicenseData to be processed in the background
-        /// </summary>
-        Queue<LicenseData> _licenseDataQueue = new Queue<LicenseData>();
-        /// <summary>
-        /// background thread to dequeue LicenseData
-        /// </summary>
-        Thread processQueueThread=null;
-        static bool bRunProcessQueueThread = true;
-
         static string _dataSource = "";
         /// <summary>
         /// hold the file name of the database file
@@ -91,35 +77,6 @@ namespace Helpers
             none,
         }
 
-        #region Singleton
-
-        /*
-        //singleton pattern: http://msdn.microsoft.com/en-us/library/ff650316.aspx
-        private static volatile LicenseData instance;
-        private static object syncRoot = new Object();
-
-        private LicenseData()
-        {
-            createDB();
-        }
-        public static LicenseData Instance
-        {
-            get 
-            {
-                if (instance == null) 
-                {
-                lock (syncRoot) 
-                {
-                    if (instance == null) 
-                        instance = new LicenseData();
-                }
-                }
-                return instance;
-            }
-        }
-        */
-        #endregion
-
         public bool bIsValidDB
         {
             get;
@@ -128,6 +85,7 @@ namespace Helpers
 
         bool checkDBFile(string sFile)
         {
+            OnStateChanged(new StatusEventArgs(StatusType.busy, "checking database"));
             bool bRet = false;
             if (!System.IO.File.Exists(sFile))
             {
@@ -151,6 +109,10 @@ namespace Helpers
                 return false;
             }
             bIsValidDB = bRet;
+            if(bIsValidDB)
+                OnStateChanged(new StatusEventArgs(StatusType.success, "database "+sFile+" is OK"));
+            else
+                OnStateChanged(new StatusEventArgs(StatusType.error, "database " + sFile + " is not OK"));
             return bRet;
         }
 
@@ -163,6 +125,7 @@ namespace Helpers
                 return;
             }
             utils.helpers.addLog("Using database: " + sDBFile);
+            OnStateChanged(new StatusEventArgs(StatusType.none, "using database " + sDBFile));
             _dgv=dgv;
             /*
             processQueueThread = new Thread(processingthread);
@@ -172,6 +135,8 @@ namespace Helpers
         }
 
         public System.Windows.Forms.BindingSource getDataset(){
+            OnStateChanged(new StatusEventArgs(StatusType.none, "reading dataset"));
+
             System.Windows.Forms.BindingSource bs = new System.Windows.Forms.BindingSource();
 
             using (SQLiteConnection connection = new SQLiteConnection(connectionString))
@@ -189,6 +154,7 @@ namespace Helpers
                 DataTable data_table = data_set.Tables[0];
 
                 bs.DataSource = data_table;
+                OnStateChanged(new StatusEventArgs(StatusType.none, "dataset has "+data_table.Rows.Count.ToString()+ " data rows"));
             }
 
             return bs;
@@ -231,6 +197,8 @@ namespace Helpers
 
         public void doRefresh(ref System.Windows.Forms.DataGridView dgv)
         {
+            OnStateChanged(new StatusEventArgs(StatusType.none, "dataset refreshing..."));
+
             if (bFiltered)
                 return;
             int iRow = 0, iCol = 0;
@@ -253,6 +221,7 @@ namespace Helpers
             {
                 dgv.CurrentCell = dgv.Rows[iRow].Cells[iCol];
             }
+            OnStateChanged(new StatusEventArgs(StatusType.none, "...dataset refreshed"));
         }
 
         public bool clearData()
@@ -343,14 +312,6 @@ namespace Helpers
         public void Dispose()
         {
             bHandleEvents = false;
-            if (processQueueThread != null)
-            {
-                bRunProcessQueueThread = false;
-                Thread.Sleep(1000);
-                if(!processQueueThread.Join(1000))
-                    processQueueThread.Abort();
-                processQueueThread = null;
-            }
             utils.helpers.addLog("LicenseDATA Disposed");
         }
 
@@ -367,11 +328,13 @@ namespace Helpers
             string receivedby,
             DateTime sendat)
         {
+            OnStateChanged(new StatusEventArgs(StatusType.none, "adding data..."));
             int LastInsert = -1;
             bool bRes = false;
             if (existsData(deviceid, key))
             {
                 utils.helpers.addLog("add abandoned for existing datarow");
+                OnStateChanged(new StatusEventArgs(StatusType.none, "...data already known"));
                 return LastInsert;
             }
             LicenseData licenseData = new LicenseData();
@@ -439,14 +402,17 @@ namespace Helpers
                     //doRefresh(ref _dgv);
                     
                     utils.helpers.addLog("added " + iRes.ToString() + " new data");
+                    OnStateChanged(new StatusEventArgs(StatusType.none, "... added "+iRes.ToString() +" new data"));
                 }
             }
             catch (SQLiteException ex)
             {
+                OnStateChanged(new StatusEventArgs(StatusType.error, "add new data failed "+ex.Message));
                 utils.helpers.addExceptionLog("add: " + cmdText+"\r\n" + ex.Message + "\r\n" + ex.StackTrace);
             }
             catch (Exception ex)
             {
+                OnStateChanged(new StatusEventArgs(StatusType.error, "add new data failed " + ex.Message));
                 utils.helpers.addExceptionLog("add: " + cmdText + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
             }
             finally
@@ -455,43 +421,7 @@ namespace Helpers
             return LastInsert;
         }
 
-        public static void processingthread(object param)
-        {
-            LicenseDataBase ldb=(LicenseDataBase)param;
-            bool bNewDataAvailable = false;
-            do
-            {
-                try
-                {
-                    lock (ldb.lockQueue)
-                    {
-                        while (ldb._licenseDataQueue.Count > 0)
-                        {
-                            LicenseData licData = ldb._licenseDataQueue.Dequeue();
-                            ldb.add(licData);
-                            bNewDataAvailable = true;
-                        }
-                        if (bNewDataAvailable)
-                        {
-                            //fire update event
-                            ldb.OnStateChanged(new StatusEventArgs(StatusType.bulk_mail, "new license data received"));
-                            bNewDataAvailable = false;
-                        }
-                    }
-                    Thread.Sleep(5000);
-                }
-                catch (ThreadAbortException ex)
-                {
-                    utils.helpers.addExceptionLog("Exception in processingthread(): " + ex.Message);
-                    bRunProcessQueueThread = false;
-                }
-                catch (Exception ex)
-                {
-                    utils.helpers.addExceptionLog("Exception in processingthread(): " + ex.Message);
-                }
-            } while (bRunProcessQueueThread);
-        }
-
+        #region events
         public event Helpers.StateChangedEventHandler StateChanged;
         protected virtual void OnStateChanged(StatusEventArgs args)
         {
@@ -504,17 +434,7 @@ namespace Helpers
                 handler(this, args);
             }
         }
-
-        public bool addQueued(LicenseData licenseData)
-        {
-            bool bRes = false;
-            lock (lockQueue)
-            {
-                _licenseDataQueue.Enqueue(licenseData);
-                bRes = true;
-            }
-            return bRes;
-        }
+        #endregion
 
         bool existsData(string sDeviceID, string sKey)
         {
@@ -568,6 +488,7 @@ namespace Helpers
 
             return bRet;
         }
+
         /// <summary>
         /// add LicenseData to DataBase, blocks for some time
         /// use manual doRefresh
@@ -576,10 +497,12 @@ namespace Helpers
         /// <returns>id of last inserted data or -1 if failed</returns>
         int add(LicenseData licenseData)
         {
+            OnStateChanged(new StatusEventArgs(StatusType.none, "adding licenseData..."));
             int LastRowID = -1;
             if (existsData(licenseData._deviceid, licenseData._key))
             {
                 utils.helpers.addLog("add abandoned for existing datarow");
+                OnStateChanged(new StatusEventArgs(StatusType.none, "...add licenseData abandonded for existing datarow"));
                 return -1;
             }
             string cmdText = "INSERT INTO licensedata " +
@@ -632,6 +555,7 @@ namespace Helpers
                     string namelist = getSQLFieldListForInsert();
                     // Einfügen eines Test-Datensatzes.
                     command.CommandText = cmdText;
+                    OnStateChanged(new StatusEventArgs(StatusType.none, "execute adding licenseData"));
                     int iRes = command.ExecuteNonQuery();
                     //get id of last insert
                     command.CommandText = "select last_insert_rowid()";
@@ -666,15 +590,18 @@ namespace Helpers
             }
             catch (SQLiteException ex)
             {
+                OnStateChanged(new StatusEventArgs(StatusType.none, "Exception adding licenseData: "+ex.Message));
                 utils.helpers.addExceptionLog("add: " + cmdText + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
             }
             catch (Exception ex)
             {
+                OnStateChanged(new StatusEventArgs(StatusType.none, "Exception adding licenseData: " + ex.Message));
                 utils.helpers.addExceptionLog("add: " + cmdText + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
             }
             finally
             {
             }
+            OnStateChanged(new StatusEventArgs(StatusType.none, "licenseData added: " + LastRowID.ToString()));
             return LastRowID ;
         }
 
@@ -691,6 +618,7 @@ namespace Helpers
             sb.Append(") ");
             return sb.ToString();
         }
+
     }
     public class licenseCols
     {

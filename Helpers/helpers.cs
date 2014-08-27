@@ -42,23 +42,6 @@ namespace utils
         }
     }
 
-    public class LicenseMail{
-        // "License Keys - Order: 15476: [NAU-1504] CETerm for Windows CE 6.0 / 5.0 / CE .NET"
-        // body=
-        //Order Number:     15476
-        //Order Date:       6/20/2014
-        //Your PO Number:   PO96655
-        //End Customer:     Honeywell
-        //Product:          [NAU-1504] CETerm for Windows CE 6.0 / 5.0 / CE .NET
-        //Quantity:         28
-
-        //Qty Ordered...............: 28
-        //Qty Shipped To Date.......: 28
-
-        //Qty Shipped in this email.: 28
-
-    }
-
     public class UserData
     {
         public string sDomain;
