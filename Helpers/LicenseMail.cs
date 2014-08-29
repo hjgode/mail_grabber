@@ -159,11 +159,13 @@ namespace Helpers
             if (m == null)
             {
                 utils.helpers.addLog("processMail: null msg");
+                OnStateChanged(new StatusEventArgs(StatusType.error, "NULL msg"));
                 return iRet;
             }
 
             try
             {
+                OnStateChanged(new StatusEventArgs(StatusType.none, "processing "+m.Attachements.Length.ToString()+" attachements" ));
                 utils.helpers.addLog(m.User +","+ m.Subject + ", # attachements: " + m.Attachements.Length.ToString() + "\r\n");
                 //get data from email
                 string sReceivededBy = m.User;
@@ -171,6 +173,8 @@ namespace Helpers
                 
                 //get data from body
                 LicenseMailBodyData bodyData = new LicenseMailBodyData();
+                OnStateChanged(new StatusEventArgs(StatusType.none, "processing mail body"));
+                utils.helpers.addLog("processing mail body");
                 bodyData = processMailBody(m);
                 utils.helpers.addLog( bodyData.dump() );
 
@@ -183,11 +187,13 @@ namespace Helpers
                         {
                             utils.helpers.addLog("start processAttachement...\r\n");
                             iRet += processAttachement(a, bodyData, m);
+                            OnStateChanged(new StatusEventArgs(StatusType.none, "processed " + iRet.ToString() + " licenses"));
                             utils.helpers.addLog("processAttachement done\r\n");
                         }
                         catch (Exception ex)
                         {
                             utils.helpers.addExceptionLog(ex.Message);
+                            OnStateChanged(new StatusEventArgs(StatusType.error, "Exception1 in processAttachement: " + ex.Message));
                         }
                     }
 
@@ -196,6 +202,7 @@ namespace Helpers
             catch (Exception ex)
             {
                 utils.helpers.addLog("Exception: " + ex.Message);
+                OnStateChanged(new StatusEventArgs(StatusType.error, "Exception2 in processAttachement: " + ex.Message));
             }
             utils.helpers.addLog("processMail did process " + iRet.ToString() + " files");
             return iRet;
@@ -208,10 +215,10 @@ namespace Helpers
             LicenseXML xmlData = LicenseXML.Deserialize(att.data);
 
             foreach(license ldata in xmlData.licenses){
-                utils.helpers.addLog("processAttachement...\r\n");
+                utils.helpers.addLog("processAttachement: new LicenseData...\r\n");
                 LicenseData licenseData = new LicenseData(ldata.id, ldata.user, ldata.key, data.OrderNumber, data.OrderDate, data.yourPOnumber, data.EndCustomer, data.Product, data.Quantity, mail.User, mail.timestamp);
                 //if (_licenseDataBase.addQueued(licenseData))
-                utils.helpers.addLog("firing event\r\n");
+                utils.helpers.addLog("firing license_mail event\r\n");
                 OnStateChanged(new StatusEventArgs(StatusType.license_mail, licenseData));
                 iCount++;
                 //if (_licenseDataBase.add(ldata.id, ldata.user, ldata.key, data.OrderNumber, data.OrderDate, data.yourPOnumber, data.EndCustomer, data.Product, data.Quantity, mail.User, mail.timestamp))

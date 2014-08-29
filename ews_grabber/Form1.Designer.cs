@@ -45,6 +45,8 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabBrowse = new System.Windows.Forms.TabPage();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
+            this.dataPopup = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.mnuExport = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
             this.btnExport = new System.Windows.Forms.Button();
             this.btnAll = new System.Windows.Forms.Button();
@@ -59,16 +61,16 @@
             this.lblLED = new System.Windows.Forms.Label();
             this.lblStatus = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
-            this.dataPopup = new System.Windows.Forms.ContextMenuStrip(this.components);
-            this.mnuExport = new System.Windows.Forms.ToolStripMenuItem();
+            this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.mnuAbout = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabBrowse.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).BeginInit();
+            this.dataPopup.SuspendLayout();
             this.panel1.SuspendLayout();
             this.tabLog.SuspendLayout();
             this.tableLayoutPanel1.SuspendLayout();
-            this.dataPopup.SuspendLayout();
             this.SuspendLayout();
             // 
             // menuStrip1
@@ -77,7 +79,8 @@
             this.fileToolStripMenuItem,
             this.exchangeToolStripMenuItem,
             this.mnuRefresh,
-            this.mnuAdmin});
+            this.mnuAdmin,
+            this.helpToolStripMenuItem});
             this.menuStrip1.Location = new System.Drawing.Point(0, 0);
             this.menuStrip1.Name = "menuStrip1";
             this.menuStrip1.Size = new System.Drawing.Size(603, 24);
@@ -185,7 +188,7 @@
             this.tabControl1.Location = new System.Drawing.Point(0, 24);
             this.tabControl1.Name = "tabControl1";
             this.tabControl1.SelectedIndex = 0;
-            this.tabControl1.Size = new System.Drawing.Size(603, 435);
+            this.tabControl1.Size = new System.Drawing.Size(603, 409);
             this.tabControl1.TabIndex = 2;
             // 
             // tabBrowse
@@ -194,7 +197,7 @@
             this.tabBrowse.Controls.Add(this.panel1);
             this.tabBrowse.Location = new System.Drawing.Point(4, 22);
             this.tabBrowse.Name = "tabBrowse";
-            this.tabBrowse.Size = new System.Drawing.Size(595, 409);
+            this.tabBrowse.Size = new System.Drawing.Size(595, 383);
             this.tabBrowse.TabIndex = 2;
             this.tabBrowse.Text = "Browse";
             this.tabBrowse.UseVisualStyleBackColor = true;
@@ -211,8 +214,22 @@
             this.dataGridView1.Name = "dataGridView1";
             this.dataGridView1.ReadOnly = true;
             this.dataGridView1.SelectionMode = System.Windows.Forms.DataGridViewSelectionMode.FullRowSelect;
-            this.dataGridView1.Size = new System.Drawing.Size(595, 342);
+            this.dataGridView1.Size = new System.Drawing.Size(595, 316);
             this.dataGridView1.TabIndex = 0;
+            // 
+            // dataPopup
+            // 
+            this.dataPopup.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mnuExport});
+            this.dataPopup.Name = "dataPopup";
+            this.dataPopup.Size = new System.Drawing.Size(108, 26);
+            // 
+            // mnuExport
+            // 
+            this.mnuExport.Name = "mnuExport";
+            this.mnuExport.Size = new System.Drawing.Size(107, 22);
+            this.mnuExport.Text = "Export";
+            this.mnuExport.Click += new System.EventHandler(this.mnuExport_Click);
             // 
             // panel1
             // 
@@ -369,28 +386,29 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(603, 26);
             this.tableLayoutPanel1.TabIndex = 6;
             // 
-            // dataPopup
+            // helpToolStripMenuItem
             // 
-            this.dataPopup.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
-            this.mnuExport});
-            this.dataPopup.Name = "dataPopup";
-            this.dataPopup.Size = new System.Drawing.Size(108, 26);
+            this.helpToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.mnuAbout});
+            this.helpToolStripMenuItem.Name = "helpToolStripMenuItem";
+            this.helpToolStripMenuItem.Size = new System.Drawing.Size(44, 20);
+            this.helpToolStripMenuItem.Text = "Help";
             // 
-            // mnuExport
+            // mnuAbout
             // 
-            this.mnuExport.Name = "mnuExport";
-            this.mnuExport.Size = new System.Drawing.Size(152, 22);
-            this.mnuExport.Text = "Export";
-            this.mnuExport.Click += new System.EventHandler(this.mnuExport_Click);
+            this.mnuAbout.Name = "mnuAbout";
+            this.mnuAbout.Size = new System.Drawing.Size(152, 22);
+            this.mnuAbout.Text = "About";
+            this.mnuAbout.Click += new System.EventHandler(this.mnuAbout_Click);
             // 
             // Form1
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(603, 459);
-            this.Controls.Add(this.tableLayoutPanel1);
             this.Controls.Add(this.tabControl1);
             this.Controls.Add(this.menuStrip1);
+            this.Controls.Add(this.tableLayoutPanel1);
             this.MainMenuStrip = this.menuStrip1;
             this.MaximizeBox = false;
             this.Name = "Form1";
@@ -402,13 +420,13 @@
             this.tabControl1.ResumeLayout(false);
             this.tabBrowse.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)(this.dataGridView1)).EndInit();
+            this.dataPopup.ResumeLayout(false);
             this.panel1.ResumeLayout(false);
             this.panel1.PerformLayout();
             this.tabLog.ResumeLayout(false);
             this.tabLog.PerformLayout();
             this.tableLayoutPanel1.ResumeLayout(false);
             this.tableLayoutPanel1.PerformLayout();
-            this.dataPopup.ResumeLayout(false);
             this.ResumeLayout(false);
             this.PerformLayout();
 
@@ -448,6 +466,8 @@
         private System.Windows.Forms.TableLayoutPanel tableLayoutPanel1;
         private System.Windows.Forms.ContextMenuStrip dataPopup;
         private System.Windows.Forms.ToolStripMenuItem mnuExport;
+        private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem mnuAbout;
     }
 }
 

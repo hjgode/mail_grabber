@@ -344,7 +344,7 @@ namespace ExchangeMail
 
                             // Bind to an existing message using its unique identifier.
                             //EmailMessage message = EmailMessage.Bind(service, new ItemId(item.Id.UniqueId));
-                            _ews._licenseMail.processMail(myMailMsg);
+                            int iRet = _ews._licenseMail.processMail(myMailMsg);
 
                             //change subject?
                             // Bind to the existing item, using the ItemId. This method call results in a GetItem call to EWS.
@@ -355,7 +355,7 @@ namespace ExchangeMail
                             // Save the updated email. This method call results in an UpdateItem call to EWS.
                             myItem.Update(ConflictResolutionMode.AlwaysOverwrite);
 
-                            _ews.OnStateChanged(new StatusEventArgs(StatusType.license_mail, "processMail"));
+                            _ews.OnStateChanged(new StatusEventArgs(StatusType.license_mail, "processed "+iRet.ToString()));
                         }
                     }
                     view.Offset += chunkSize;

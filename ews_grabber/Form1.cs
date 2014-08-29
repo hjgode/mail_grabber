@@ -26,7 +26,9 @@ namespace ews_grabber
         public Form1()
         {
             InitializeComponent();
-
+            #if !DEBUG
+            mnuAdmin.Visible = false;
+            #endif
             //load settings
             _mysettings = new MySettings();
             _mysettings = _mysettings.load();
@@ -117,14 +119,21 @@ namespace ews_grabber
         /// <param name="args"></param>
         void on_new_licensemail(object sender, StatusEventArgs args)
         {
-            utils.helpers.addLog("received new License Data\r\n");
-            LicenseData data=args.licenseData;
-            //add data and refresh datagrid
-            int InsertedID = _licenseDataBase.add(data._deviceid, data._customer, data._key, data._ordernumber, data._orderdate, data._ponumber, data._endcustomer, data._product, data._quantity, data._receivedby, data._sendat);
-            //add data to datagrid
-            //if (InsertedID!=-1)
-            //    addDataToGrid(InsertedID, data._deviceid, data._customer, data._key, data._ordernumber, data._orderdate, data._ponumber, data._endcustomer, data._product, data._quantity, data._receivedby, data._sendat);
-            setLblStatus("new data");
+            if (args.eStatus == StatusType.license_mail)
+            {
+                utils.helpers.addLog("received new License Data\r\n");
+                LicenseData data = args.licenseData;
+                //add data and refresh datagrid
+                int InsertedID = _licenseDataBase.add(data._deviceid, data._customer, data._key, data._ordernumber, data._orderdate, data._ponumber, data._endcustomer, data._product, data._quantity, data._receivedby, data._sendat);
+                //add data to datagrid
+                //if (InsertedID!=-1)
+                //    addDataToGrid(InsertedID, data._deviceid, data._customer, data._key, data._ordernumber, data._orderdate, data._ponumber, data._endcustomer, data._product, data._quantity, data._receivedby, data._sendat);
+                setLblStatus("new data");
+            }
+            else
+            {
+                _ews_stateChanged1(sender, args);
+            }
         }
 
         void _licenseDataBase_StateChanged(object s, StatusEventArgs args)
@@ -498,6 +507,13 @@ namespace ews_grabber
         private void mnuExport_Click(object sender, EventArgs e)
         {
             btnExport_Click(this, e);
+        }
+
+        private void mnuAbout_Click(object sender, EventArgs e)
+        {
+            AboutBox1 dlg = new AboutBox1();
+            dlg.ShowDialog();
+            dlg.Dispose();
         }
     }
 }
