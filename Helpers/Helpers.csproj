@@ -47,6 +47,12 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="GetLogonDataOutlook.cs">
+      <SubType>Form</SubType>
+    </Compile>
+    <Compile Include="GetLogonDataOutlook.Designer.cs">
+      <DependentUpon>GetLogonDataOutlook.cs</DependentUpon>
+    </Compile>
     <Compile Include="GetLogonData.cs">
       <SubType>Form</SubType>
     </Compile>
@@ -65,6 +71,9 @@
     <Compile Include="StatusEventArgs.cs" />
   </ItemGroup>
   <ItemGroup>
+    <EmbeddedResource Include="GetLogonDataOutlook.resx">
+      <DependentUpon>GetLogonDataOutlook.cs</DependentUpon>
+    </EmbeddedResource>
     <EmbeddedResource Include="GetLogonData.resx">
       <DependentUpon>GetLogonData.cs</DependentUpon>
     </EmbeddedResource>

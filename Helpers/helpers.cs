@@ -44,6 +44,13 @@ namespace utils
 
     public class UserData
     {
+        public enum UserLogonType
+        {
+            none,
+            exchange,
+            outlook,
+        }
+
         public string sDomain;
         public string sUser;
         public string sPassword;
@@ -51,6 +58,13 @@ namespace utils
         public string WebProxy;
         public int WebProxyPort;
 
+        UserLogonType userLogonType = UserLogonType.exchange;
+        public string sOutlookProfile = "";
+        public bool bShowOutlookDialog = false;
+
+        /// <summary>
+        /// generic
+        /// </summary>
         public UserData()
         {
             sDomain = "";
@@ -59,13 +73,54 @@ namespace utils
             bUseProxy = false;
             WebProxy = "";
             WebProxyPort = 8080;
+            userLogonType = UserLogonType.exchange;
         }
+
+        /// <summary>
+        /// outlook user logon data
+        /// </summary>
+        /// <param name="u">user name</param>
+        /// <param name="p">password</param>
+        /// <param name="b">show dialog or not</param>
+        public UserData(string u, string p, bool b)
+        {
+            userLogonType = UserLogonType.outlook;
+            sUser = u;
+            sPassword = p;
+            bShowOutlookDialog = b;
+            userLogonType = UserLogonType.outlook;
+            sOutlookProfile = "";
+        }
+        /// <summary>
+        /// outlook user logon data
+        /// </summary>
+        /// <param name="bDialog">show dialog</param>
+        /// <param name="profile">outlook profile name or "" for default</param>
+        /// <param name="user">user name</param>
+        /// <param name="pass">password</param>
+        public UserData(bool bDialog, string profile, string user, string pass)
+        {
+            userLogonType = UserLogonType.outlook;
+            bShowOutlookDialog = bDialog;
+            sOutlookProfile = profile;
+            sUser = user;
+            sPassword = pass;
+        }
+
+        /// <summary>
+        /// exchange user data
+        /// </summary>
+        /// <param name="d"></param>
+        /// <param name="u"></param>
+        /// <param name="p"></param>
+        /// <param name="bProxy"></param>
         public UserData(string d, string u, string p, bool bProxy)
         {
             sDomain = d;
             sUser = u;
             sPassword = p;
             bUseProxy = bProxy;
+            userLogonType = UserLogonType.exchange;
         }
         public UserData(string d, string u, string p, bool bProxy, string sWebProxy, int iWebProxyPort)
         {
@@ -75,6 +130,7 @@ namespace utils
             bUseProxy = bProxy;
             WebProxy = sWebProxy;
             WebProxyPort = iWebProxyPort;
+            userLogonType = UserLogonType.exchange;
         }
     }
 
