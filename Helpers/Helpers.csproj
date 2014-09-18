@@ -67,6 +67,7 @@
     <Compile Include="LicenseXML.cs">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Compile>
+    <Compile Include="dgv_settings.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="StatusEventArgs.cs" />
   </ItemGroup>

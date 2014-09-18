@@ -643,6 +643,21 @@ namespace Helpers
                 "sendat" //         10
         };
 
+        public static string[] DataGridColHeaders = {
+                "ID",//id     0
+                "Serial#",//id     0
+                "Customer",//user   1
+                "License key",     //       2
+                "Order#", //   3
+                "Order Date",   //   4
+                "Purchase Order#", //      5
+                "End Customer",//    6
+                "Product", //       7
+                "Quantity", //      8
+                "Received by", //    9
+                "Send at" //         10
+        };
+
         public static licenseCols[] dataCols ={
             new licenseCols(LicenseDataColumns[0], SqlDbType.NVarChar),
             new licenseCols(LicenseDataColumns[1], SqlDbType.NVarChar),
