@@ -22,6 +22,7 @@ namespace ews_grabber
         LicenseMail _licenseMail = new LicenseMail();
         bool _bFilterActive = false;
         MySettings _mysettings = new MySettings();
+        utils.DataGridViewSettings dgvSettings = new utils.DataGridViewSettings();
 
         public MainForm()
         {
@@ -74,29 +75,28 @@ namespace ews_grabber
 
         void readDGVlayout()
         {
-            return;
-
-            utils.DataGridViewSettings dgv_sett = new utils.DataGridViewSettings();
-            dgv_sett.load();
+            dgvSettings = utils.DataGridViewSettings.Deserialize<utils.DataGridViewSettings>(utils.helpers.getAppPath() + utils.DataGridViewSettings.settingsFileConst);
+            //dgvSettings=dgvSettings.load();
+            if (dgvSettings == null)
+                return;
             for (int x = 0; x < dataGridView1.Columns.Count; x++ )
             {
-                dataGridView1.Columns[x].Visible = dgv_sett.columns[x].visible;
-                dataGridView1.Columns[x].Width = dgv_sett.columns[x].width;
-                dataGridView1.Columns[x].HeaderText = dgv_sett.columns[x].header;
+                dataGridView1.Columns[x].Visible = dgvSettings.columns[x].visible;
+                dataGridView1.Columns[x].Width = dgvSettings.columns[x].width;
+                dataGridView1.Columns[x].HeaderText = dgvSettings.columns[x].header;
             }
         }
 
         void saveDGVlayout()
         {
-            utils.DataGridViewSettings dgv_sett = new utils.DataGridViewSettings();
-            dgv_sett.load();
             for (int x = 0; x < dataGridView1.Columns.Count; x++ )
             {
-                 dgv_sett.columns[x].visible=dataGridView1.Columns[x].Visible   ;
-                 dgv_sett.columns[x].width=  dataGridView1.Columns[x].Width     ;
-                 dgv_sett.columns[x].header = dataGridView1.Columns[x].HeaderText;
+                 dgvSettings.columns[x].visible=dataGridView1.Columns[x].Visible   ;
+                 dgvSettings.columns[x].width = dataGridView1.Columns[x].Width;
+                 dgvSettings.columns[x].header = dataGridView1.Columns[x].HeaderText;
             }
-            dgv_sett.Save(dgv_sett);
+            utils.DataGridViewSettings.Serialize<utils.DataGridViewSettings>(dgvSettings, utils.helpers.getAppPath() + utils.DataGridViewSettings.settingsFileConst);
+//            dgvSettings.Save(dgvSettings);
         }
 
         void exitApp()

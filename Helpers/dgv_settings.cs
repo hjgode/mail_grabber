@@ -18,7 +18,9 @@ namespace utils
         public int count{get;set;}
 
         [XmlIgnore]
-        string settingsFile = "dgv_settings.xml";
+        static string settingsFile = "dgv_settings.xml";
+        [XmlIgnore]
+        public const string settingsFileConst = "dgv_settings.xml";
 
         private XmlSerializer xs = null;
         private Type type = null;
@@ -27,13 +29,54 @@ namespace utils
         {
             string appPath = utils.helpers.getAppPath();
             settingsFile = appPath + settingsFile;
-                //this.type = typeof(DataGridViewSettings);
-                //this.xs = new XmlSerializer(typeof(DataGridViewSettings));//new XmlSerializer(this.type);
+            this.type = typeof(DataGridViewSettings);
+            this.xs = new XmlSerializer(typeof(DataGridViewSettings));//new XmlSerializer(this.type);
             List<DataGridViewColumn> dgv_cols=new List<DataGridViewColumn>();
             for (int x = 0; x < Helpers.licenseCols.DataGridColHeaders.Length; x++)
                 dgv_cols.Add(new DataGridViewColumn(Helpers.licenseCols.DataGridColHeaders[x]));
             columns = dgv_cols.ToArray();
         }
+        #region codeproject
+        // http://www.codeproject.com/Tips/394133/XML-Serialization-and-Deserialization-in-Csharp
+        public static bool Serialize<T>(T value, String filename)
+        {
+            if (value == null)
+            {
+                return false;
+            }
+            try
+            {
+                XmlSerializer _xmlserializer = new XmlSerializer(typeof(T));
+                Stream stream = new FileStream(filename, FileMode.Create);
+                _xmlserializer.Serialize(stream, value);
+                stream.Close();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+        public static t Deserialize<t>(String filename)
+        {
+            if (string.IsNullOrEmpty(filename))
+            {
+                return default(t);
+            }
+            try
+            {
+                XmlSerializer _xmlSerializer = new XmlSerializer(typeof(t));
+                Stream stream = new FileStream(filename, FileMode.Open, FileAccess.Read);
+                var result = (t)_xmlSerializer.Deserialize(stream);
+                stream.Close();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return default(t);
+            }
+        }
+        #endregion
 
         public class DataGridViewColumn
         {

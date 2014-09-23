@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<DatagridviewSettings>
+  <Columns>
+    <visible>false</visible>
+    <header>ID</header>
+    <width>50</width>
+  </Columns>
+  <Columns>
+    <visible>true</visible>
+    <header>Serial#</header>
+    <width>50</width>
+  </Columns>
+  <Columns>
+    <visible>true</visible>
+    <header>Customer</header>
+    <width>100</width>
+  </Columns>
+  <Columns>
+    <visible>true</visible>
+    <header>License key</header>
+    <width>100</width>
+  </Columns>
+  <Columns>
+    <visible>true</visible>
+    <header>Order#</header>
+    <width>100</width>
+  </Columns>
+  <Columns>
+    <visible>true</visible>
+    <header>Order Date</header>
+    <width>100</width>
+  </Columns>
+  <Columns>
+    <visible>true</visible>
+    <header>Purchase Order#</header>
+    <width>100</width>
+  </Columns>
+  <Columns>
+    <visible>true</visible>
+    <header>End Customer</header>
+    <width>100</width>
+  </Columns>
+  <Columns>
+    <visible>true</visible>
+    <header>Product</header>
+    <width>100</width>
+  </Columns>
+  <Columns>
+    <visible>true</visible>
+    <header>Quantity</header>
+    <width>100</width>
+  </Columns>
+  <Columns>
+    <visible>true</visible>
+    <header>Received by</header>
+    <width>100</width>
+  </Columns>
+  <Columns>
+    <visible>true</visible>
+    <header>Send at</header>
+    <width>100</width>
+  </Columns>
+  <count>0</count>
+</DatagridviewSettings>
