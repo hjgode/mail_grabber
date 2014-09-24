@@ -17,6 +17,12 @@ namespace utils
         [XmlElement("count")]
         public int count{get;set;}
 
+        //form layout
+        [XmlElement("form_location")]
+        public System.Drawing.Point form_location = new System.Drawing.Point(0, 0);
+        [XmlElement("form_size")]
+        public System.Drawing.Size form_size = new System.Drawing.Size(800, 600);
+
         [XmlIgnore]
         static string settingsFile = "dgv_settings.xml";
         [XmlIgnore]
@@ -35,10 +41,33 @@ namespace utils
             for (int x = 0; x < Helpers.licenseCols.DataGridColHeaders.Length; x++)
                 dgv_cols.Add(new DataGridViewColumn(Helpers.licenseCols.DataGridColHeaders[x]));
             columns = dgv_cols.ToArray();
+            count = dgv_cols.Count;
+            
         }
+
         #region codeproject
         // http://www.codeproject.com/Tips/394133/XML-Serialization-and-Deserialization-in-Csharp
-        public static bool Serialize<T>(T value, String filename)
+
+        public static bool Serialize(DataGridViewSettings value, String filename)
+        {
+            if (value == null)
+            {
+                return false;
+            }
+            try
+            {
+                XmlSerializer _xmlserializer = new XmlSerializer(typeof(DataGridViewSettings));
+                Stream stream = new FileStream(filename, FileMode.Create);
+                _xmlserializer.Serialize(stream, value);
+                stream.Close();
+                return true;
+            }
+            catch (Exception ex)
+            {
+                return false;
+            }
+        }
+        static bool Serialize<T>(T value, String filename)
         {
             if (value == null)
             {
@@ -57,7 +86,26 @@ namespace utils
                 return false;
             }
         }
-        public static t Deserialize<t>(String filename)
+        public static DataGridViewSettings Deserialize(String filename)
+        {
+            if (string.IsNullOrEmpty(filename))
+            {
+                return new DataGridViewSettings();
+            }
+            try
+            {
+                XmlSerializer _xmlSerializer = new XmlSerializer(typeof(DataGridViewSettings));
+                Stream stream = new FileStream(filename, FileMode.Open, FileAccess.Read);
+                var result = (DataGridViewSettings)_xmlSerializer.Deserialize(stream);
+                stream.Close();
+                return result;
+            }
+            catch (Exception ex)
+            {
+                return new DataGridViewSettings();
+            }
+        }
+        static t Deserialize<t>(String filename)
         {
             if (string.IsNullOrEmpty(filename))
             {
@@ -92,56 +140,5 @@ namespace utils
             }
         }
 
-        public DataGridViewSettings load()
-        {
-            DataGridViewSettings settings = new DataGridViewSettings();
-            StreamReader sr=null;
-            try
-            {
-                XmlSerializer xs = new XmlSerializer(typeof(DataGridViewSettings));
-                sr = new StreamReader(settingsFile);
-                settings = (DataGridViewSettings)xs.Deserialize(sr);
-                sr.Close();
-            }
-            catch (Exception ex)
-            {
-                utils.helpers.addExceptionLog("DataGridViewSettings load Exception: ");
-            }
-            finally
-            {
-                if(sr!=null)
-                    sr.Close();
-            }
-            
-            return settings;
-        }
-
-        public bool Save(DataGridViewSettings settings)
-        {
-            StreamWriter sw = null;
-            try
-            {
-                //now global: XmlSerializer xs = new XmlSerializer(typeof(MySettings));
-                //omit xmlns:xsi from xml output
-                //Create our own namespaces for the output
-                XmlSerializerNamespaces ns = new XmlSerializerNamespaces();
-                //Add an empty namespace and empty value
-                ns.Add("", "");
-                sw = new StreamWriter(settingsFile);
-                xs = new XmlSerializer(typeof(DataGridViewSettings));//new XmlSerializer(this.type);
-                xs.Serialize(sw, settings, ns);
-                return true;
-            }
-            catch (Exception ex)
-            {
-                utils.helpers.addExceptionLog(ex.Message);
-                return false;
-            }
-            finally
-            {
-                if (sw != null)
-                    sw.Close();
-            }
-        }        
     }
 }

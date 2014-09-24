@@ -75,8 +75,7 @@ namespace ews_grabber
 
         void readDGVlayout()
         {
-            dgvSettings = utils.DataGridViewSettings.Deserialize<utils.DataGridViewSettings>(utils.helpers.getAppPath() + utils.DataGridViewSettings.settingsFileConst);
-            //dgvSettings=dgvSettings.load();
+            dgvSettings = utils.DataGridViewSettings.Deserialize(utils.helpers.getAppPath() + utils.DataGridViewSettings.settingsFileConst);
             if (dgvSettings == null)
                 return;
             for (int x = 0; x < dataGridView1.Columns.Count; x++ )
@@ -85,6 +84,8 @@ namespace ews_grabber
                 dataGridView1.Columns[x].Width = dgvSettings.columns[x].width;
                 dataGridView1.Columns[x].HeaderText = dgvSettings.columns[x].header;
             }
+            this.Location = dgvSettings.form_location;
+            this.Size = dgvSettings.form_size;
         }
 
         void saveDGVlayout()
@@ -95,8 +96,9 @@ namespace ews_grabber
                  dgvSettings.columns[x].width = dataGridView1.Columns[x].Width;
                  dgvSettings.columns[x].header = dataGridView1.Columns[x].HeaderText;
             }
-            utils.DataGridViewSettings.Serialize<utils.DataGridViewSettings>(dgvSettings, utils.helpers.getAppPath() + utils.DataGridViewSettings.settingsFileConst);
-//            dgvSettings.Save(dgvSettings);
+            dgvSettings.form_location = this.Location;
+            dgvSettings.form_size = this.Size;
+            utils.DataGridViewSettings.Serialize(dgvSettings, utils.helpers.getAppPath() + utils.DataGridViewSettings.settingsFileConst);
         }
 
         void exitApp()

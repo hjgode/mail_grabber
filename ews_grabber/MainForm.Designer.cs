@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             this.menuStrip1 = new System.Windows.Forms.MenuStrip();
             this.fileToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.mnuSettings = new System.Windows.Forms.ToolStripMenuItem();
@@ -46,7 +47,7 @@
             this.tabControl1 = new System.Windows.Forms.TabControl();
             this.tabBrowse = new System.Windows.Forms.TabPage();
             this.dataGridView1 = new System.Windows.Forms.DataGridView();
-            this.dataPopup = new System.Windows.Forms.ContextMenuStrip();
+            this.dataPopup = new System.Windows.Forms.ContextMenuStrip(this.components);
             this.mnuExport = new System.Windows.Forms.ToolStripMenuItem();
             this.panel1 = new System.Windows.Forms.Panel();
             this.btnExport = new System.Windows.Forms.Button();
@@ -303,10 +304,10 @@
             this.radioDeviceID.AutoSize = true;
             this.radioDeviceID.Location = new System.Drawing.Point(304, 10);
             this.radioDeviceID.Name = "radioDeviceID";
-            this.radioDeviceID.Size = new System.Drawing.Size(73, 17);
+            this.radioDeviceID.Size = new System.Drawing.Size(61, 17);
             this.radioDeviceID.TabIndex = 0;
             this.radioDeviceID.TabStop = true;
-            this.radioDeviceID.Text = "Device ID";
+            this.radioDeviceID.Text = "Serial #";
             this.radioDeviceID.UseVisualStyleBackColor = true;
             // 
             // radioKeyNumber
@@ -400,7 +401,7 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(603, 26);
             this.tableLayoutPanel1.TabIndex = 6;
             // 
-            // Form1
+            // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
@@ -410,8 +411,8 @@
             this.Controls.Add(this.tableLayoutPanel1);
             this.MainMenuStrip = this.menuStrip1;
             this.MaximizeBox = false;
-            this.Name = "Form1";
-            this.StartPosition = System.Windows.Forms.FormStartPosition.CenterScreen;
+            this.Name = "MainForm";
+            this.StartPosition = System.Windows.Forms.FormStartPosition.Manual;
             this.Text = "Exchange License Mail Grabber";
             this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.Form1_FormClosing);
             this.menuStrip1.ResumeLayout(false);
