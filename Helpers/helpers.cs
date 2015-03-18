@@ -12,12 +12,49 @@ namespace utils
     {
         public const string filterSubject = "License Keys - Order";
         public const string filterAttachement = "xml";
-
+        public static bool bDoLogging = true;
+        static uint maxFileSize = 1024*1024;
         public static void addLog(string s)
         {
             System.Diagnostics.Debug.WriteLine(s);
+            if (bDoLogging)
+            {
+                try
+                {
+                    if (System.IO.File.Exists(LogFilename))
+                    {
+                        System.IO.FileInfo fi = new System.IO.FileInfo(LogFilename);
+                        if (fi.Length > maxFileSize)
+                        {
+                            //create backup file
+                            System.IO.File.Copy(LogFilename, LogFilename + "bak", true);
+                            System.IO.File.Delete(LogFilename);
+                        }
+                    }
+                    System.IO.StreamWriter sw = new System.IO.StreamWriter(LogFilename, true);
+                    sw.WriteLine(DateTime.Now.ToShortDateString()+ " " + DateTime.Now.ToShortTimeString() + "\t" + s);
+                    sw.Flush();
+                    sw.Close();
+                }
+                catch (Exception ex)
+                {
+                    System.Diagnostics.Debug.WriteLine("Exception in addLog FileWrite: " + ex.Message);
+                }
+            }
         }
-        
+
+        static string sLogFilename = "";
+        static string LogFilename
+        {
+            get
+            {
+                if (sLogFilename.Length == 0)
+                {
+                    sLogFilename = getAppPath() + "ews_grabber.log.txt";
+                }
+                return sLogFilename;
+            }
+        }
         public static void addExceptionLog(string s)
         {
             // Get call stack

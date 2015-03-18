@@ -33,18 +33,19 @@
             this.txtUser = new System.Windows.Forms.TextBox();
             this.txtDomain = new System.Windows.Forms.TextBox();
             this.groupBox1 = new System.Windows.Forms.GroupBox();
+            this.numProxyPort = new System.Windows.Forms.NumericUpDown();
+            this.chkUseWebProxy = new System.Windows.Forms.CheckBox();
+            this.txtWebProxy = new System.Windows.Forms.TextBox();
+            this.label6 = new System.Windows.Forms.Label();
+            this.label5 = new System.Windows.Forms.Label();
             this.txtExchangeServiceURL = new System.Windows.Forms.TextBox();
             this.label4 = new System.Windows.Forms.Label();
-            this.label5 = new System.Windows.Forms.Label();
-            this.txtWebProxy = new System.Windows.Forms.TextBox();
-            this.chkUseWebProxy = new System.Windows.Forms.CheckBox();
-            this.label6 = new System.Windows.Forms.Label();
-            this.numProxyPort = new System.Windows.Forms.NumericUpDown();
             this.btnOK = new System.Windows.Forms.Button();
             this.btnCancel = new System.Windows.Forms.Button();
             this.label3 = new System.Windows.Forms.Label();
             this.txtDatabaseFile = new System.Windows.Forms.TextBox();
             this.btnGetFile = new System.Windows.Forms.Button();
+            this.chkEnableLogging = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)(this.numProxyPort)).BeginInit();
             this.SuspendLayout();
@@ -97,57 +98,6 @@
             this.groupBox1.TabStop = false;
             this.groupBox1.Text = "Exchange Web Service";
             // 
-            // txtExchangeServiceURL
-            // 
-            this.txtExchangeServiceURL.Location = new System.Drawing.Point(110, 23);
-            this.txtExchangeServiceURL.Name = "txtExchangeServiceURL";
-            this.txtExchangeServiceURL.Size = new System.Drawing.Size(219, 20);
-            this.txtExchangeServiceURL.TabIndex = 3;
-            // 
-            // label4
-            // 
-            this.label4.AutoSize = true;
-            this.label4.Location = new System.Drawing.Point(7, 26);
-            this.label4.Name = "label4";
-            this.label4.Size = new System.Drawing.Size(71, 13);
-            this.label4.TabIndex = 2;
-            this.label4.Text = "Service URL:";
-            // 
-            // label5
-            // 
-            this.label5.AutoSize = true;
-            this.label5.Location = new System.Drawing.Point(7, 87);
-            this.label5.Name = "label5";
-            this.label5.Size = new System.Drawing.Size(61, 13);
-            this.label5.TabIndex = 2;
-            this.label5.Text = "Proxy URL:";
-            // 
-            // txtWebProxy
-            // 
-            this.txtWebProxy.Location = new System.Drawing.Point(110, 84);
-            this.txtWebProxy.Name = "txtWebProxy";
-            this.txtWebProxy.Size = new System.Drawing.Size(219, 20);
-            this.txtWebProxy.TabIndex = 3;
-            // 
-            // chkUseWebProxy
-            // 
-            this.chkUseWebProxy.AutoSize = true;
-            this.chkUseWebProxy.Location = new System.Drawing.Point(10, 57);
-            this.chkUseWebProxy.Name = "chkUseWebProxy";
-            this.chkUseWebProxy.Size = new System.Drawing.Size(100, 17);
-            this.chkUseWebProxy.TabIndex = 4;
-            this.chkUseWebProxy.Text = "Use Web Proxy";
-            this.chkUseWebProxy.UseVisualStyleBackColor = true;
-            // 
-            // label6
-            // 
-            this.label6.AutoSize = true;
-            this.label6.Location = new System.Drawing.Point(6, 118);
-            this.label6.Name = "label6";
-            this.label6.Size = new System.Drawing.Size(58, 13);
-            this.label6.TabIndex = 2;
-            this.label6.Text = "Proxy Port:";
-            // 
             // numProxyPort
             // 
             this.numProxyPort.Increment = new decimal(new int[] {
@@ -164,6 +114,57 @@
             this.numProxyPort.Name = "numProxyPort";
             this.numProxyPort.Size = new System.Drawing.Size(113, 20);
             this.numProxyPort.TabIndex = 5;
+            // 
+            // chkUseWebProxy
+            // 
+            this.chkUseWebProxy.AutoSize = true;
+            this.chkUseWebProxy.Location = new System.Drawing.Point(10, 57);
+            this.chkUseWebProxy.Name = "chkUseWebProxy";
+            this.chkUseWebProxy.Size = new System.Drawing.Size(100, 17);
+            this.chkUseWebProxy.TabIndex = 4;
+            this.chkUseWebProxy.Text = "Use Web Proxy";
+            this.chkUseWebProxy.UseVisualStyleBackColor = true;
+            // 
+            // txtWebProxy
+            // 
+            this.txtWebProxy.Location = new System.Drawing.Point(110, 84);
+            this.txtWebProxy.Name = "txtWebProxy";
+            this.txtWebProxy.Size = new System.Drawing.Size(219, 20);
+            this.txtWebProxy.TabIndex = 3;
+            // 
+            // label6
+            // 
+            this.label6.AutoSize = true;
+            this.label6.Location = new System.Drawing.Point(6, 118);
+            this.label6.Name = "label6";
+            this.label6.Size = new System.Drawing.Size(58, 13);
+            this.label6.TabIndex = 2;
+            this.label6.Text = "Proxy Port:";
+            // 
+            // label5
+            // 
+            this.label5.AutoSize = true;
+            this.label5.Location = new System.Drawing.Point(7, 87);
+            this.label5.Name = "label5";
+            this.label5.Size = new System.Drawing.Size(61, 13);
+            this.label5.TabIndex = 2;
+            this.label5.Text = "Proxy URL:";
+            // 
+            // txtExchangeServiceURL
+            // 
+            this.txtExchangeServiceURL.Location = new System.Drawing.Point(110, 23);
+            this.txtExchangeServiceURL.Name = "txtExchangeServiceURL";
+            this.txtExchangeServiceURL.Size = new System.Drawing.Size(219, 20);
+            this.txtExchangeServiceURL.TabIndex = 3;
+            // 
+            // label4
+            // 
+            this.label4.AutoSize = true;
+            this.label4.Location = new System.Drawing.Point(7, 26);
+            this.label4.Name = "label4";
+            this.label4.Size = new System.Drawing.Size(71, 13);
+            this.label4.TabIndex = 2;
+            this.label4.Text = "Service URL:";
             // 
             // btnOK
             // 
@@ -211,11 +212,22 @@
             this.btnGetFile.UseVisualStyleBackColor = true;
             this.btnGetFile.Click += new System.EventHandler(this.btnGetFile_Click);
             // 
+            // chkEnableLogging
+            // 
+            this.chkEnableLogging.AutoSize = true;
+            this.chkEnableLogging.Location = new System.Drawing.Point(23, 308);
+            this.chkEnableLogging.Name = "chkEnableLogging";
+            this.chkEnableLogging.Size = new System.Drawing.Size(95, 17);
+            this.chkEnableLogging.TabIndex = 5;
+            this.chkEnableLogging.Text = "enable logging";
+            this.chkEnableLogging.UseVisualStyleBackColor = true;
+            // 
             // SettingsForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.ClientSize = new System.Drawing.Size(404, 399);
+            this.Controls.Add(this.chkEnableLogging);
             this.Controls.Add(this.btnGetFile);
             this.Controls.Add(this.btnCancel);
             this.Controls.Add(this.btnOK);
@@ -259,5 +271,6 @@
         private System.Windows.Forms.Label label3;
         private System.Windows.Forms.TextBox txtDatabaseFile;
         private System.Windows.Forms.Button btnGetFile;
+        private System.Windows.Forms.CheckBox chkEnableLogging;
     }
 }

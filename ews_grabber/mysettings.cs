@@ -33,6 +33,9 @@ namespace ews_grabber
         [XmlElement("UseWebProxy")]
         public bool UseWebProxy = false;
 
+        [XmlElement("UseLogging")]
+        public bool UseLogging = true;
+
         [XmlIgnore]
         string settingsFile = "mysettings.xml";
 

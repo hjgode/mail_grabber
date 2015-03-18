@@ -296,8 +296,12 @@ namespace ExchangeMail
             const int chunkSize = 50;
             try
             {
+                PropertySet itempropertyset = new PropertySet(BasePropertySet.FirstClassProperties);
+                itempropertyset.RequestedBodyType = BodyType.Text; //request plain text body 
                 //blocking call
                 ItemView view = new ItemView(chunkSize);
+                view.PropertySet = itempropertyset;
+
                 view.OrderBy.Add(ItemSchema.DateTimeReceived, SortDirection.Ascending);
                 /*
                 private static void GetAttachments(ExchangeService service)
@@ -332,7 +336,7 @@ namespace ExchangeMail
                         if (item is EmailMessage)
                         {
                             EmailMessage mailmessage = item as EmailMessage;
-                            mailmessage.Load(); //load data from server
+                            mailmessage.Load(itempropertyset); //load data from server
 
                             helpers.addLog("\t is email ...");
 
@@ -518,6 +522,11 @@ namespace ExchangeMail
                     _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "Pull looking for new mails"));
                     GetEventsResults events = subscription.GetEvents();
                     _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "Pull processing"));
+
+                    //to get plain text body only
+                    PropertySet itempropertyset = new PropertySet(BasePropertySet.FirstClassProperties);
+                    itempropertyset.RequestedBodyType = BodyType.Text; //request plain text body
+
                     // Loop through all item-related events.
                     foreach (ItemEvent itemEvent in events.ItemEvents)
                     {
@@ -527,7 +536,7 @@ namespace ExchangeMail
                                 utils.helpers.addLog("PullNotification: " + "EventType.NewMail");
                                 _ews.OnStateChanged(new StatusEventArgs(StatusType.none, "check eMail ..."));
                                 // A new mail has been received. Bind to it
-                                EmailMessage message = EmailMessage.Bind(_ews._service, itemEvent.ItemId);
+                                EmailMessage message = EmailMessage.Bind(_ews._service, itemEvent.ItemId, itempropertyset);
                                 bool bDoProcessMail=false;
                                 if (message.Subject.Contains(helpers.filterSubject) && (!message.Subject.Contains("[processed]")))
                                 {

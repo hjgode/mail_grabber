@@ -176,6 +176,9 @@ namespace Helpers
                 OnStateChanged(new StatusEventArgs(StatusType.none, "processing mail body"));
                 utils.helpers.addLog("processing mail body");
                 bodyData = processMailBody(m);
+                
+                utils.helpers.addLog("mail body='" + m.Body + "'");
+
                 utils.helpers.addLog( bodyData.dump() );
 
                 if (m.Attachements.Length > 0)

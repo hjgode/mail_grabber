@@ -127,6 +127,7 @@
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
+    <Content Include="history.txt" />
     <Content Include="LicenseXMLFileSample.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </Content>

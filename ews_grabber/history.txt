@@ -1,0 +1,9 @@
+﻿assembly version
+	changes
+1.0.0.2
+	added code to get eMail body as plain text
+
+1.0.0.3
+	added code to enable logging to file and the file logging code
+	the file log is named ews_grabber.log.txt and there will be one backup file called ews_grabber.log.txt.bak
+	the file is cycled for every 1MB file size

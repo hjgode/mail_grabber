@@ -27,6 +27,8 @@ namespace ews_grabber
             chkUseWebProxy.Checked = _mysettings.UseWebProxy;
             txtWebProxy.Text = _mysettings.ExchangeWebProxy;
             numProxyPort.Value = _mysettings.EchangeWebProxyPort;
+            
+            chkEnableLogging.Checked = _mysettings.UseLogging;
 
             txtDatabaseFile.Text = _mysettings.SQLiteDataBaseFilename;
         }
@@ -39,6 +41,7 @@ namespace ews_grabber
             _mysettings.ExchangeWebProxy = txtWebProxy.Text;
             _mysettings.EchangeWebProxyPort = (int)numProxyPort.Value;
             _mysettings.UseWebProxy = chkUseWebProxy.Checked;
+            _mysettings.UseLogging = chkEnableLogging.Checked;
 
             string db_file = txtDatabaseFile.Text;
             if (db_file != _mysettings.SQLiteDataBaseFilename)
