@@ -591,5 +591,14 @@ namespace ews_grabber
             dlg.ShowDialog();
             dlg.Dispose();
         }
+
+        private void mnuEnterData_Click(object sender, EventArgs e)
+        {
+            ManualDataInput mdi = new ManualDataInput(ref _licenseDataBase);
+            if(mdi.ShowDialog()==System.Windows.Forms.DialogResult.OK)
+            {
+                mnuRefresh_Click(this, e);
+            }
+        }
     }
 }

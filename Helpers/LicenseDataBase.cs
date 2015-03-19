@@ -315,6 +315,62 @@ namespace Helpers
             utils.helpers.addLog("LicenseDATA Disposed");
         }
 
+        static List<string> _prodList=new List<string>();
+        public string[] productList
+        {
+            get
+            {
+                if (_prodList.Count > 0)
+                    return _prodList.ToArray();
+                string cmdText = string.Format("SELECT DISTINCT product FROM licensedata;");
+                try
+                {
+                    using (SQLiteConnection connection = new SQLiteConnection(connectionString))
+                    {
+                    openConn:
+                        try
+                        {
+                            connection.Open();
+                        }
+                        catch (SQLiteException ex)
+                        {
+                            if (ex.ErrorCode == (int)SQLiteErrorCode.Locked)
+                            {
+                                Thread.Sleep(1000);
+                                goto openConn;
+                            }
+                        }
+
+                        SQLiteCommand command = new SQLiteCommand(connection);
+                        command.CommandText = cmdText;
+
+                        SQLiteDataReader rdr = command.ExecuteReader();
+                        if (rdr.HasRows)
+                        {
+                            while (rdr.Read())
+                                _prodList.Add(rdr["product"].ToString());
+                        }
+                        else
+                            utils.helpers.addLog("no known products found");
+
+                        rdr.Close();
+                        command.Dispose();
+                    }
+                }
+                catch (SQLiteException ex)
+                {
+                    utils.helpers.addExceptionLog("add: " + cmdText + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
+                }
+                catch (Exception ex)
+                {
+                    utils.helpers.addExceptionLog("add: " + cmdText + "\r\n" + ex.Message + "\r\n" + ex.StackTrace);
+                }
+                finally
+                {
+                }
+                return _prodList.ToArray();
+            }
+        }
         public int add(            
             string deviceid,
             string customer,

@@ -82,5 +82,14 @@ namespace Helpers
         public LicenseData()
         {
         }
+        public override string ToString()
+        {
+            string s = string.Format("deviceID: {0}\r\nCustomer: {1}\r\nLicense Key:{2}\r\nOrder Number: {3}\r\nOrder Date: {4}\r\n" +
+                "PO Number: {5}\r\nEnd Customer: {6}\r\nProduct: {7}\r\nQuantity: {8}\r\nReceived by: {9}\r\nSend at: {10}",
+                _deviceid,
+                _customer,
+                _key, _ordernumber, _orderdate, _ponumber, _endcustomer, _product, _quantity, _receivedby, _sendat);
+            return s;
+        }
     }
 }

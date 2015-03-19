@@ -63,6 +63,7 @@
             this.lblLED = new System.Windows.Forms.Label();
             this.lblStatus = new System.Windows.Forms.TextBox();
             this.tableLayoutPanel1 = new System.Windows.Forms.TableLayoutPanel();
+            this.mnuEnterData = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStrip1.SuspendLayout();
             this.tabControl1.SuspendLayout();
             this.tabBrowse.SuspendLayout();
@@ -78,6 +79,7 @@
             this.menuStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
             this.exchangeToolStripMenuItem,
+            this.mnuEnterData,
             this.mnuRefresh,
             this.mnuAdmin,
             this.helpToolStripMenuItem});
@@ -401,6 +403,13 @@
             this.tableLayoutPanel1.Size = new System.Drawing.Size(603, 26);
             this.tableLayoutPanel1.TabIndex = 6;
             // 
+            // mnuEnterData
+            // 
+            this.mnuEnterData.Name = "mnuEnterData";
+            this.mnuEnterData.Size = new System.Drawing.Size(73, 20);
+            this.mnuEnterData.Text = "Enter Data";
+            this.mnuEnterData.Click += new System.EventHandler(this.mnuEnterData_Click);
+            // 
             // MainForm
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 13F);
@@ -468,6 +477,7 @@
         private System.Windows.Forms.ToolStripMenuItem mnuExport;
         private System.Windows.Forms.ToolStripMenuItem helpToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem mnuAbout;
+        private System.Windows.Forms.ToolStripMenuItem mnuEnterData;
     }
 }
 
