@@ -444,6 +444,8 @@ namespace Helpers
                     // Einfügen eines Test-Datensatzes.
                     command.CommandText = cmdText;
                     int iRes = command.ExecuteNonQuery();
+                    
+                    utils.helpers.addLog("SQLcmd: '" + command.CommandText + "'");
 
                     //get id of last insert
                     command.CommandText = "select last_insert_rowid()";

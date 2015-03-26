@@ -12,11 +12,13 @@ namespace ews_grabber
     public partial class ManualDataInput : Form
     {
         Helpers.LicenseDataBase _licenseDataBase;
+        MySettings _settings;
 
-        public ManualDataInput(ref Helpers.LicenseDataBase licData)
+        public ManualDataInput(ref Helpers.LicenseDataBase licData, ref MySettings Settings)
         {
             InitializeComponent();
 
+            txtProduct.Text = "[NAU-1504] CETerm for Windows CE 6.0 / 5.0 / CE .NET";
             _licenseDataBase = licData;
             attachErrorProvider();
             btnSave.Enabled = false;
@@ -28,6 +30,10 @@ namespace ews_grabber
             txtProduct.AutoCompleteMode = AutoCompleteMode.SuggestAppend;
             txtProduct.AutoCompleteSource = AutoCompleteSource.CustomSource;
 
+            //prefill
+            _settings = Settings;
+            //settings.load();
+            txtReceivedBy.Text = _settings.ExchangeUsername;
         }
 
         void attachErrorProvider()
@@ -50,8 +56,10 @@ namespace ews_grabber
             if (string.IsNullOrEmpty(tb.Text))
             {
                 errorProvider1.SetError(tb, "Please fill valid data");
-                btnSave.Enabled=false;
+                btnSave.Enabled = false;
             }
+            else
+                errorProvider1.SetError(tb, "");                
         }
 
         private void dateTimePicker1_ValueChanged(object sender, EventArgs e)
@@ -97,6 +105,7 @@ namespace ews_grabber
                 lblLog.Text = "SAVED\r\n"+licData.ToString();
             }
             //clear all textboxes?
+            
         }
 
         private void btnClear_Click(object sender, EventArgs e)
@@ -116,6 +125,8 @@ namespace ews_grabber
             txtDeviceID.Text = "";
             txtID.Text = "";
             txtLicenseKey.Text = "";
+            txtReceivedBy.Text = _settings.ExchangeUsername;
+            txtProduct.Text = "[NAU-1504] CETerm for Windows CE 6.0 / 5.0 / CE .NET";
         }
 
         private void btnCancel_Click(object sender, EventArgs e)

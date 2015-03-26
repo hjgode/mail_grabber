@@ -594,7 +594,7 @@ namespace ews_grabber
 
         private void mnuEnterData_Click(object sender, EventArgs e)
         {
-            ManualDataInput mdi = new ManualDataInput(ref _licenseDataBase);
+            ManualDataInput mdi = new ManualDataInput(ref _licenseDataBase, ref _mysettings);
             if(mdi.ShowDialog()==System.Windows.Forms.DialogResult.OK)
             {
                 mnuRefresh_Click(this, e);
