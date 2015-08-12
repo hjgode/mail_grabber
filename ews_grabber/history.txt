@@ -10,3 +10,10 @@
 
 1.0.0.4
 	added manual input form
+
+1.0.0.5
+	?
+
+1.0.0.6
+	changed mailbody code (public static LicenseMailBodyData get(IMailMessage msg)) to not include ';' in parsing to number or date
+

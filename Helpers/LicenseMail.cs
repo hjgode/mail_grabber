@@ -76,9 +76,11 @@ namespace Helpers
             public string EndCustomer;
             public string Product;
             public int Quantity;
+            utils.helpers helpers = new utils.helpers();
 
             public LicenseMailBodyData()
             {
+
             }
             public string dump()
             {
@@ -103,40 +105,64 @@ namespace Helpers
                     @".+End Customer:[ ]+(?<end_customer>[\S]+);"+
                     ""
                 );
+                string currentMatch = "START";
+                string gMatch = "";
+                try {
+                    var match = expression.Match(sBody);
+                    currentMatch = "order_number";
+                    //utils.helpers.addLog(string.Format("order_number......{0}", match.Groups["order_number"]));
+                    data.OrderNumber = match.Groups["order_number"].Value;
 
-                var match = expression.Match(sBody);
-                //utils.helpers.addLog(string.Format("order_number......{0}", match.Groups["order_number"]));
-                data.OrderNumber = match.Groups["order_number"].Value;
-                
-                //utils.helpers.addLog(string.Format("order_date........{0}", match.Groups["order_date"]));
-                data.OrderDate = getDateTimeFromUSdateString(match.Groups["order_date"].Value);
-                
-                //utils.helpers.addLog(string.Format("po_number........ {0}", match.Groups["po_number"]));
-                data.yourPOnumber = match.Groups["po_number"].Value;
+                    currentMatch = "order_date";
+                    //utils.helpers.addLog(string.Format("order_date........{0}", match.Groups["order_date"]));
+                    gMatch = match.Groups["order_date"].Value.TrimEnd(new char[] { ';' });
+                    data.OrderDate = getDateTimeFromUSdateString(gMatch);
 
-                //utils.helpers.addLog(string.Format("end_customer..... {0}", match.Groups["end_customer"]));
-                data.EndCustomer = match.Groups["end_customer"].Value;
+                    currentMatch = "po_number";
+                    //utils.helpers.addLog(string.Format("po_number........ {0}", match.Groups["po_number"]));
+                    data.yourPOnumber = match.Groups["po_number"].Value;
 
-                expression = new Regex(@".+Product:[ ]+(?<product>.+);.+Quantity");
-                match = expression.Match(sBody); 
-                //utils.helpers.addLog(string.Format("product...........{0}", match.Groups["product"]));
-                data.Product = match.Groups["product"].Value;
+                    currentMatch = "end_customer";
+                    //utils.helpers.addLog(string.Format("end_customer..... {0}", match.Groups["end_customer"]));
+                    data.EndCustomer = match.Groups["end_customer"].Value;
 
-                expression = new Regex(@".+Quantity:[ ]+(?<quantity>[0-9]+);");
-                match = expression.Match(sBody); 
-                //utils.helpers.addLog(string.Format("quantity..........{0}", match.Groups["quantity"]));
-                data.Quantity = Convert.ToInt16(match.Groups["quantity"].Value);
+                    currentMatch = "Product";
+                    expression = new Regex(@".+Product:[ ]+(?<product>.+);.+Quantity");
+                    match = expression.Match(sBody);
+                    //utils.helpers.addLog(string.Format("product...........{0}", match.Groups["product"]));
+                    data.Product = match.Groups["product"].Value;
 
+                    currentMatch = "Quantity";
+                    expression = new Regex(@".+Quantity:[ ]+(?<quantity>[0-9]+);");
+                    match = expression.Match(sBody);
+                    //utils.helpers.addLog(string.Format("quantity..........{0}", match.Groups["quantity"]));
+                    data.Quantity = Convert.ToInt16(match.Groups["quantity"].Value.TrimEnd(new char[] { ';' }));
+                }
+                catch (Exception ex)
+                {
+                    utils.helpers.addLog("Exception processing mail body regex: " + ex.Message + "\r\ncurrent expression: "+expression+"\r\ncurrentMatch: "+currentMatch);
+                    throw new FormatException("RegEx fails for MailBody");
+                }
                 return data;
             }
             static DateTime getDateTimeFromUSdateString(string s)
             {
                 DateTime dt=new DateTime();
                 string[] ds = s.Split('/');
-                if(ds.Length==3)
-                    dt=new DateTime(Convert.ToInt16(ds[2]), Convert.ToInt16(ds[0]), Convert.ToInt16(ds[1]));
+                if (ds.Length == 3)
+                    try {
+                        // ie 8/18/2015
+                        int month = Convert.ToInt16(ds[0]);
+                        int day = Convert.ToInt16(ds[1]);
+                        int year = Convert.ToInt16(ds[2]);
+                        dt = new DateTime(year, month, day);
+                    }catch(Exception ex)
+                    {
+                        utils.helpers.addLog("Exception in getDateTimeFromUSdateString: " + ex.Message + " for " + s);
+                        dt = new DateTime(1999, 1, 1);
+                    }
                 else
-                    dt=new DateTime(1999, 1, 1);
+                    dt = new DateTime(1999, 1, 1);
                 return dt;
             }
         }
